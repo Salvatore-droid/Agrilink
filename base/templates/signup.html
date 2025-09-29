@@ -1,0 +1,1342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Auth Section */
+    .auth-section {
+        min-height: 100vh;
+        background: linear-gradient(135deg, 
+            rgba(255, 152, 0, 0.95) 0%, 
+            rgba(76, 175, 80, 0.9) 50%, 
+            rgba(46, 125, 50, 0.85) 100%),
+            url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,0 1000,1000 0,1000"/></svg>');
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 520px;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Auth Card */
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 48px 40px;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.1),
+            0 0 0 1px rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--secondary), var(--primary));
+    }
+
+    /* Header */
+    .auth-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .logo-main {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        text-decoration: none;
+        margin-bottom: 24px;
+        padding: 12px 24px;
+        background: rgba(46, 125, 50, 0.1);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .logo-main:hover {
+        transform: translateY(-2px);
+        background: rgba(46, 125, 50, 0.15);
+    }
+
+    .logo-main i {
+        color: var(--secondary);
+        font-size: 32px;
+    }
+
+    .auth-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .auth-subtitle {
+        color: var(--text-light);
+        font-size: 16px;
+        line-height: 1.5;
+        opacity: 0.8;
+    }
+
+    /* Progress Steps */
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 40px;
+        padding: 0 20px;
+    }
+
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50px;
+        right: 50px;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .step {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--text-light);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: 3px solid rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .step.active .step-number {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .step-label {
+        font-size: 12px;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .step.active .step-label {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    /* Form Sections */
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        color: var(--primary-dark);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 16px;
+    }
+
+    /* User Type Options */
+    .user-type-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 10px;
+    }
+
+    .user-type-option {
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        padding: 20px 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .user-type-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(46, 125, 50, 0.05));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .user-type-option:hover::before {
+        opacity: 1;
+    }
+
+    .user-type-option:hover {
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-type-option.selected {
+        border-color: var(--primary);
+        background: rgba(46, 125, 50, 0.05);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(46, 125, 50, 0.2);
+    }
+
+    .user-type-option.selected::before {
+        opacity: 1;
+    }
+
+    .user-type-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: var(--text-light);
+        transition: all 0.3s;
+        position: relative;
+        z-index: 2;
+    }
+
+    .user-type-option.selected .user-type-icon {
+        color: var(--primary);
+        transform: scale(1.1);
+    }
+
+    .user-type-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 14px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .user-type-option.selected .user-type-label {
+        color: var(--primary);
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-label i {
+        color: var(--primary);
+        width: 16px;
+        text-align: center;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 18px 52px 18px 20px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 
+            0 0 0 4px rgba(46, 125, 50, 0.1),
+            0 8px 24px rgba(46, 125, 50, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .form-input::placeholder {
+        color: #a0a0a0;
+        font-weight: 400;
+    }
+
+    .input-icon {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        font-size: 18px;
+        pointer-events: none;
+        transition: color 0.3s ease;
+    }
+
+    .form-input:focus + .input-icon {
+        color: var(--primary);
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        font-size: 18px;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+
+    .password-toggle:hover {
+        color: var(--primary);
+        background: rgba(46, 125, 50, 0.1);
+    }
+
+    /* Password Requirements */
+    .password-requirements {
+        background: rgba(248, 249, 250, 0.8);
+        padding: 20px;
+        border-radius: 16px;
+        margin-top: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .password-requirements h4 {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .requirements-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    .requirements-list li {
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s ease;
+    }
+
+    .requirements-list li.valid {
+        color: var(--primary);
+    }
+
+    .requirements-list i {
+        font-size: 12px;
+        transition: color 0.3s ease;
+    }
+
+    .requirements-list li.valid i {
+        color: #28a745;
+    }
+
+    /* Checkbox */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        cursor: pointer;
+        padding: 20px;
+        background: rgba(248, 249, 250, 0.8);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .checkbox-wrapper:hover {
+        background: rgba(248, 249, 250, 1);
+        transform: translateY(-1px);
+    }
+
+    .custom-checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: relative;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .custom-checkbox.checked {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .custom-checkbox.checked::after {
+        content: '✓';
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .checkbox-text {
+        color: var(--text-dark);
+        font-size: 14px;
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .checkbox-text a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .checkbox-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        width: 100%;
+        padding: 20px;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 32px 0 24px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(46, 125, 50, 0.3);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    /* Divider */
+    .divider {
+        text-align: center;
+        margin: 32px 0;
+        position: relative;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+    }
+
+    .divider-text {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0 20px;
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Social Buttons */
+    .social-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 16px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        background: white;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .social-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(0, 0, 0, 0.02));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .social-btn:hover::before {
+        opacity: 1;
+    }
+
+    .social-btn:hover {
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-btn-google i { color: #DB4437; }
+    .social-btn-facebook i { color: #4267B2; }
+
+    /* Footer */
+    .auth-footer {
+        text-align: center;
+        padding-top: 24px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-footer p {
+        color: var(--text-light);
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+
+    .auth-footer a:hover {
+        background: rgba(46, 125, 50, 0.1);
+        transform: translateY(-1px);
+    }
+
+    /* Benefits Section */
+    .benefits-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 24px;
+        margin-top: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .benefits-title {
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .benefit-item {
+        text-align: center;
+        color: white;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .benefit-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .benefit-icon {
+        font-size: 28px;
+        margin-bottom: 12px;
+        opacity: 0.9;
+    }
+
+    .benefit-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        opacity: 0.9;
+    }
+
+    .benefit-description {
+        font-size: 12px;
+        opacity: 0.8;
+        line-height: 1.4;
+    }
+
+    /* Messages */
+    .auth-messages {
+        margin-bottom: 24px;
+    }
+
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .alert::before {
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 16px;
+    }
+
+    .alert-success {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+        border-color: rgba(76, 175, 80, 0.2);
+    }
+
+    .alert-success::before {
+        content: '✓';
+    }
+
+    .alert-error {
+        background: rgba(244, 67, 54, 0.1);
+        color: #d32f2f;
+        border-color: rgba(244, 67, 54, 0.2);
+    }
+
+    .alert-error::before {
+        content: '⚠';
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .auth-section {
+            padding: 20px 16px;
+        }
+
+        .auth-card {
+            padding: 40px 32px;
+            border-radius: 20px;
+        }
+
+        .auth-title {
+            font-size: 28px;
+        }
+
+        .user-type-options {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .social-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .progress-steps {
+            padding: 0 10px;
+        }
+
+        .progress-steps::before {
+            left: 30px;
+            right: 30px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .auth-card {
+            padding: 32px 24px;
+            border-radius: 16px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+        }
+
+        .form-input {
+            padding: 16px 48px 16px 16px;
+            font-size: 15px;
+        }
+
+        .btn-submit {
+            padding: 18px;
+            font-size: 15px;
+        }
+
+        .logo-main {
+            font-size: 24px;
+            padding: 10px 20px;
+        }
+
+        .logo-main i {
+            font-size: 28px;
+        }
+
+        .progress-steps {
+            padding: 0 5px;
+        }
+
+        .progress-steps::before {
+            left: 20px;
+            right: 20px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+        }
+
+        .step-label {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .auth-section {
+            padding: 16px 12px;
+        }
+
+        .auth-card {
+            padding: 24px 20px;
+        }
+
+        .form-input {
+            padding: 14px 44px 14px 14px;
+            font-size: 14px;
+        }
+    }
+
+    /* Loading Animation */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading {
+        animation: spin 1s linear infinite;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .floating {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Password Strength Indicator */
+    .password-strength {
+        margin-top: 8px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .strength-weak { background: #dc3545; width: 25%; }
+    .strength-fair { background: #ffc107; width: 50%; }
+    .strength-good { background: #28a745; width: 75%; }
+    .strength-strong { background: #20c997; width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <!-- Signup Card -->
+        <div class="auth-card floating">
+            <!-- Header -->
+            <div class="auth-header">
+                <a href="{% url 'home' %}" class="logo-main">
+                    <i class="fas fa-seedling"></i>
+                    AgriLink Market
+                </a>
+                <h1 class="auth-title">Join AgriLink Market</h1>
+                <p class="auth-subtitle">Create your account to start your agricultural trading journey</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Account</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Profile</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Complete</div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Signup Form -->
+            <form method="post" class="auth-form" id="signupForm">
+                {% csrf_token %}
+                
+                <!-- User Type Selection -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-user-tag"></i>
+                        I am a:
+                    </div>
+                    <div class="user-type-options">
+                        <label class="user-type-option {% if user_type == 'farmer' %}selected{% endif %}">
+                            <input type="radio" name="user_type" value="farmer" class="user-type-input" {% if user_type == 'farmer' %}checked{% endif %} style="display: none;">
+                            <div class="user-type-icon">
+                                <i class="fas fa-tractor"></i>
+                            </div>
+                            <div class="user-type-label">Farmer</div>
+                        </label>
+                        <label class="user-type-option {% if user_type == 'buyer' %}selected{% endif %}">
+                            <input type="radio" name="user_type" value="buyer" class="user-type-input" {% if user_type == 'buyer' %}checked{% endif %} style="display: none;">
+                            <div class="user-type-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="user-type-label">Buyer</div>
+                        </label>
+                        <label class="user-type-option {% if user_type == 'both' %}selected{% endif %}">
+                            <input type="radio" name="user_type" value="both" class="user-type-input" {% if user_type == 'both' %}checked{% endif %} style="display: none;">
+                            <div class="user-type-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="user-type-label">Both</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-user"></i>
+                        Personal Information
+                    </div>
+                    
+                    <div class="form-row">
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i>
+                                First Name *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" 
+                                       name="first_name" 
+                                       class="form-input" 
+                                       placeholder="Enter your first name"
+                                       value="{{ first_name|default:'' }}"
+                                       required>
+                                <i class="fas fa-user input-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i>
+                                Last Name *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" 
+                                       name="last_name" 
+                                       class="form-input" 
+                                       placeholder="Enter your last name"
+                                       value="{{ last_name|default:'' }}"
+                                       required>
+                                <i class="fas fa-user input-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-key"></i>
+                        Account Information
+                    </div>
+                    
+                    <!-- Username -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-at"></i>
+                            Username *
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-input" 
+                                   placeholder="Choose a unique username"
+                                   value="{{ username|default:'' }}"
+                                   required>
+                            <i class="fas fa-at input-icon"></i>
+                        </div>
+                        <div class="input-hint">This will be your unique identifier on the platform</div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address *
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="email" 
+                                   name="email" 
+                                   class="form-input" 
+                                   placeholder="Enter your email address"
+                                   value="{{ email|default:'' }}"
+                                   required>
+                            <i class="fas fa-envelope input-icon"></i>
+                        </div>
+                        <div class="input-hint">We'll send a verification link to this email</div>
+                    </div>
+
+                    <!-- Passwords -->
+                    <div class="form-row">
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Password *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" 
+                                       name="password1" 
+                                       class="form-input" 
+                                       placeholder="Create a strong password"
+                                       required
+                                       oninput="checkPasswordStrength(this.value)">
+                                <i class="fas fa-lock input-icon"></i>
+                                <button type="button" class="password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength">
+                                <div class="password-strength-bar" id="passwordStrength"></div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Confirm Password *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" 
+                                       name="password2" 
+                                       class="form-input" 
+                                       placeholder="Confirm your password"
+                                       required
+                                       oninput="checkPasswordMatch()">
+                                <i class="fas fa-lock input-icon"></i>
+                                <button type="button" class="password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <h4>Password must contain:</h4>
+                        <ul class="requirements-list" id="passwordRequirements">
+                            <li id="reqLength"><i class="fas fa-circle"></i> At least 8 characters</li>
+                            <li id="reqUpperLower"><i class="fas fa-circle"></i> Uppercase and lowercase letters</li>
+                            <li id="reqNumber"><i class="fas fa-circle"></i> At least one number</li>
+                            <li id="reqSpecial"><i class="fas fa-circle"></i> At least one special character</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Contact Information
+                    </div>
+                    
+                    <!-- Phone Number -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-phone"></i>
+                            Phone Number *
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="tel" 
+                                   name="phone_number" 
+                                   class="form-input" 
+                                   placeholder="e.g., +254712345678"
+                                   value="{{ phone_number|default:'' }}"
+                                   required>
+                            <i class="fas fa-phone input-icon"></i>
+                        </div>
+                        <div class="input-hint">Enter your WhatsApp-enabled number for better communication</div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-location-dot"></i>
+                            Location *
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" 
+                                   name="location" 
+                                   class="form-input" 
+                                   placeholder="e.g., Nairobi, Nakuru, Eldoret"
+                                   value="{{ location|default:'' }}"
+                                   required>
+                            <i class="fas fa-location-dot input-icon"></i>
+                        </div>
+                        <div class="input-hint">Your city or region for localized market access</div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="form-section">
+                    <div class="checkbox-wrapper" onclick="toggleCheckbox(this)">
+                        <div class="custom-checkbox {% if agree_to_terms %}checked{% endif %}"></div>
+                        <span class="checkbox-text">
+                            I agree to the <a href="{% url 'privacy_policy' %}">Terms of Service</a> and <a href="{% url 'privacy_policy' %}">Privacy Policy</a>. I understand that AgriLink Market will process my data in accordance with these policies and Kenyan data protection laws.
+                        </span>
+                        <input type="checkbox" name="agree_to_terms" style="display: none;" {% if agree_to_terms %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-user-plus"></i>
+                    Create Account
+                </button>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span class="divider-text">or continue with</span>
+                </div>
+
+                <!-- Social Signup -->
+                <div class="social-buttons">
+                    <button type="button" class="social-btn social-btn-google">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </button>
+                    <button type="button" class="social-btn social-btn-facebook">
+                        <i class="fab fa-facebook"></i>
+                        Facebook
+                    </button>
+                </div>
+            </form>
+
+            <!-- Login Link -->
+            <div class="auth-footer">
+                <p>
+                    Already have an account? 
+                    <a href="{% url 'login' %}">Sign in</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="benefits-section">
+            <h3 class="benefits-title">Why Join AgriLink Market?</h3>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="benefit-title">Better Prices</div>
+                    <div class="benefit-description">AI-powered pricing for maximum profits</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="benefit-title">Fast Delivery</div>
+                    <div class="benefit-description">Integrated logistics network</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="benefit-title">Secure Payments</div>
+                    <div class="benefit-description">M-Pesa integration for safe transactions</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="benefit-title">Direct Access</div>
+                    <div class="benefit-description">Connect directly with buyers/sellers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // User type selection
+        const userTypeOptions = document.querySelectorAll('.user-type-option');
+        userTypeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                userTypeOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Check the radio input
+                const input = this.querySelector('.user-type-input');
+                input.checked = true;
+            });
+        });
+
+        // Password toggle functionality
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+        });
+
+        // Form submission enhancement
+        const form = document.getElementById('signupForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Creating Account...';
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+
+        // Auto-focus first field
+        const firstInput = form.querySelector('input:not([type="hidden"])');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    });
+
+    function toggleCheckbox(wrapper) {
+        const checkbox = wrapper.querySelector('.custom-checkbox');
+        const hiddenInput = wrapper.querySelector('input[type="checkbox"]');
+        
+        checkbox.classList.toggle('checked');
+        hiddenInput.checked = !hiddenInput.checked;
+    }
+
+    function checkPasswordStrength(password) {
+        const strengthBar = document.getElementById('passwordStrength');
+        const requirements = {
+            length: document.getElementById('reqLength'),
+            upperLower: document.getElementById('reqUpperLower'),
+            number: document.getElementById('reqNumber'),
+            special: document.getElementById('reqSpecial')
+        };
+
+        let score = 0;
+        const checks = {
+            length: password.length >= 8,
+            upperLower: /[a-z]/.test(password) && /[A-Z]/.test(password),
+            number: /\d/.test(password),
+            special: /[^a-zA-Z\d]/.test(password)
+        };
+
+        // Update requirement indicators
+        Object.keys(checks).forEach(key => {
+            if (checks[key]) {
+                requirements[key].classList.add('valid');
+                requirements[key].querySelector('i').className = 'fas fa-check';
+                score++;
+            } else {
+                requirements[key].classList.remove('valid');
+                requirements[key].querySelector('i').className = 'fas fa-circle';
+            }
+        });
+
+        // Update strength bar
+        const levels = ['weak', 'fair', 'good', 'strong'];
+        const levelIndex = Math.min(score, levels.length - 1);
+        strengthBar.className = 'password-strength-bar';
+        strengthBar.classList.add(`strength-${levels[levelIndex]}`);
+    }
+
+    function checkPasswordMatch() {
+        const password1 = document.querySelector('input[name="password1"]');
+        const password2 = document.querySelector('input[name="password2"]');
+        
+        if (password1.value && password2.value) {
+            if (password1.value !== password2.value) {
+                password2.style.borderColor = '#dc3545';
+            } else {
+                password2.style.borderColor = '#28a745';
+            }
+        }
+    }
+</script>
+{% endblock %}

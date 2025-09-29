@@ -1,0 +1,994 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Layout */
+    .dashboard {
+        min-height: 100vh;
+        background: linear-gradient(135deg, 
+            rgba(248, 249, 250, 0.95) 0%,
+            rgba(240, 242, 245, 0.9) 100%);
+        padding: 30px 20px;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .welcome-section h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .welcome-section p {
+        color: var(--text-light);
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+    }
+
+    .action-btn-outline {
+        background: white;
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(46, 125, 50, 0.2);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-icon.primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    .stat-icon.secondary {
+        background: linear-gradient(135deg, var(--secondary), #ff8a00);
+    }
+
+    .stat-icon.success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .stat-icon.warning {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+
+    .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: rgba(46, 125, 50, 0.1);
+        color: var(--primary);
+    }
+
+    .stat-trend.negative {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    /* Activity Section */
+    .activity-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    .view-all {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .view-all:hover {
+        background: rgba(46, 125, 50, 0.1);
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary);
+    }
+
+    .activity-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .activity-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        background: var(--primary);
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+    }
+
+    .activity-description {
+        color: var(--text-light);
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .activity-time {
+        color: var(--text-light);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* Sidebar Sections */
+    .sidebar-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .sidebar-section:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        color: white;
+        margin: 0 auto 20px;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .profile-role {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(46, 125, 50, 0.1);
+        color: var(--primary);
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-transform: capitalize;
+    }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .profile-stat {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .profile-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 4px;
+    }
+
+    .profile-stat-label {
+        font-size: 12px;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Recent Products/Orders */
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .item-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border-left: 3px solid var(--primary);
+    }
+
+    .item-card:hover {
+        background: #e9ecef;
+        transform: translateX(3px);
+    }
+
+    .item-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: white;
+        background: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .item-content {
+        flex: 1;
+    }
+
+    .item-title {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .item-meta {
+        color: var(--text-light);
+        font-size: 12px;
+    }
+
+    .item-price {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 14px;
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-light);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: var(--text-dark);
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    /* User Type Specific Sections */
+    .user-type-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    /* Market Insights */
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .insight-card {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .insight-card:hover {
+        background: #e9ecef;
+        transform: translateY(-3px);
+    }
+
+    .insight-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 8px;
+    }
+
+    .insight-label {
+        font-size: 14px;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard {
+            padding: 20px 16px;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .quick-actions {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .content-grid {
+            gap: 20px;
+        }
+
+        .activity-section, 
+        .sidebar-section,
+        .user-type-section {
+            padding: 24px;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .profile-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .insights-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard {
+            padding: 16px 12px;
+        }
+
+        .welcome-section h1 {
+            font-size: 28px;
+        }
+
+        .stat-card {
+            padding: 24px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+        }
+
+        .activity-section, 
+        .sidebar-section,
+        .user-type-section {
+            padding: 20px;
+        }
+
+        .activity-item {
+            padding: 16px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 28px;
+        }
+
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .slide-in-left {
+        animation: slideInLeft 0.6s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header fade-in-up">
+            <div class="welcome-section">
+                <h1>Welcome back, {{ user.first_name|default:user.username }}! 👋</h1>
+                <p>Here's what's happening with your agricultural business today</p>
+            </div>
+            <div class="quick-actions">
+                {% if user_profile.user_type in 'farmer both' %}
+                <a href="{% url 'marketplace' %}" class="action-btn action-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </a>
+                {% endif %}
+                {% if user_profile.user_type in 'buyer both' %}
+                <a href="{% url 'marketplace' %}" class="action-btn action-btn-outline">
+                    <i class="fas fa-shopping-cart"></i>
+                    Browse Market
+                </a>
+                {% endif %}
+                <a href="{% url 'security_settings' %}" class="action-btn action-btn-outline">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card slide-in-left">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        12%
+                    </div>
+                </div>
+                <div class="stat-value">KSh 47,892</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+
+            <div class="stat-card slide-in-left" style="animation-delay: 0.1s;">
+                <div class="stat-header">
+                    <div class="stat-icon secondary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        8%
+                    </div>
+                </div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">Active Orders</div>
+            </div>
+
+            <div class="stat-card slide-in-left" style="animation-delay: 0.2s;">
+                <div class="stat-header">
+                    <div class="stat-icon success">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-trend negative">
+                        <i class="fas fa-arrow-down"></i>
+                        3%
+                    </div>
+                </div>
+                <div class="stat-value">156</div>
+                <div class="stat-label">Products Listed</div>
+            </div>
+
+            <div class="stat-card slide-in-left" style="animation-delay: 0.3s;">
+                <div class="stat-header">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        15%
+                    </div>
+                </div>
+                <div class="stat-value">89</div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column - Main Content -->
+            <div class="left-column">
+                <!-- Recent Activity -->
+                <div class="activity-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-clock"></i>
+                            Recent Activity
+                        </h2>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-list">
+                        {% for login in login_history %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">Successful Login</div>
+                                <div class="activity-description">IP: {{ login.ip_address }}</div>
+                                <div class="activity-time">{{ login.login_time|timesince }} ago</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">Welcome to AgriLink!</div>
+                                <div class="activity-description">Get started by adding your first product or browsing the marketplace</div>
+                                <div class="activity-time">Just now</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- User Type Specific Content -->
+                {% if user_profile.user_type in 'farmer both' %}
+                <!-- Farmer Products Section -->
+                <div class="user-type-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-tractor"></i>
+                            My Products
+                        </h2>
+                        <a href="{% url 'marketplace' %}" class="view-all">Manage Products</a>
+                    </div>
+                    <div class="item-list">
+                        {% for product in farmer_products %}
+                        <div class="item-card">
+                            <div class="item-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="item-content">
+                                <div class="item-title">{{ product.name }}</div>
+                                <div class="item-meta">{{ product.category.name }} • {{ product.quantity }} {{ product.unit }}</div>
+                            </div>
+                            <div class="item-price">KSh {{ product.price }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-seedling"></i>
+                            <h3>No Products Yet</h3>
+                            <p>Start selling by adding your first product to the marketplace</p>
+                            <a href="{% url 'marketplace' %}" class="action-btn action-btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Add First Product
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if user_profile.user_type in 'buyer both' %}
+                <!-- Buyer Orders Section -->
+                <div class="user-type-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-shopping-cart"></i>
+                            Recent Orders
+                        </h2>
+                        <a href="#" class="view-all">View All Orders</a>
+                    </div>
+                    <div class="item-list">
+                        {% for order in buyer_orders %}
+                        <div class="item-card">
+                            <div class="item-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="item-content">
+                                <div class="item-title">Order #{{ order.id }}</div>
+                                <div class="item-meta">{{ order.product.name }} • {{ order.quantity }} {{ order.product.unit }}</div>
+                            </div>
+                            <div class="item-price">{{ order.status|title }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h3>No Orders Yet</h3>
+                            <p>Start shopping by browsing products in the marketplace</p>
+                            <a href="{% url 'marketplace' %}" class="action-btn action-btn-primary">
+                                <i class="fas fa-store"></i>
+                                Browse Marketplace
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column - Sidebar -->
+            <div class="right-column">
+                <!-- Profile Card -->
+                <div class="sidebar-section profile-card fade-in-up">
+                    <div class="profile-avatar">
+                        {{ user.first_name|first|default:user.username|first }}{{ user.last_name|first|default:'' }}
+                    </div>
+                    <h2 class="profile-name">{{ user.get_full_name|default:user.username }}</h2>
+                    <div class="profile-role">{{ user_profile.user_type }}</div>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">24</div>
+                            <div class="profile-stat-label">Orders</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">8</div>
+                            <div class="profile-stat-label">Products</div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'security_settings' %}" class="action-btn action-btn-outline" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-user-edit"></i>
+                        Edit Profile
+                    </a>
+                </div>
+
+                <!-- Market Insights -->
+                <div class="sidebar-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Market Insights
+                        </h2>
+                    </div>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <div class="insight-value">KSh 245</div>
+                            <div class="insight-label">Maize/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">KSh 180</div>
+                            <div class="insight-label">Tomatoes/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">KSh 120</div>
+                            <div class="insight-label">Potatoes/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">+8%</div>
+                            <div class="insight-label">Price Trend</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="sidebar-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Quick Tips
+                        </h2>
+                    </div>
+                    <div class="item-list">
+                        <div class="item-card">
+                            <div class="item-icon" style="background: var(--secondary);">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="item-content">
+                                <div class="item-title">AI Price Suggestions</div>
+                                <div class="item-meta">Get optimal pricing for your products</div>
+                            </div>
+                        </div>
+                        <div class="item-card">
+                            <div class="item-icon" style="background: #28a745;">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="item-content">
+                                <div class="item-title">Fast Delivery</div>
+                                <div class="item-meta">Integrated logistics network</div>
+                            </div>
+                        </div>
+                        <div class="item-card">
+                            <div class="item-icon" style="background: #dc3545;">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="item-content">
+                                <div class="item-title">Secure Payments</div>
+                                <div class="item-meta">M-Pesa integration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add interactive animations
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Add hover effects to activity items
+        const activityItems = document.querySelectorAll('.activity-item');
+        activityItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(5px)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Real-time updates simulation
+        function updateMarketInsights() {
+            const insights = document.querySelectorAll('.insight-value');
+            if (insights.length > 0) {
+                // Simulate price changes
+                const changes = ['+2%', '-1%', '+3%', '+1%'];
+                insights[3].textContent = changes[Math.floor(Math.random() * changes.length)];
+            }
+        }
+
+        // Update market insights every 30 seconds
+        setInterval(updateMarketInsights, 30000);
+
+        // Add loading animation to action buttons
+        const actionButtons = document.querySelectorAll('.action-btn');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.href || this.href === '#') {
+                    e.preventDefault();
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                    }, 2000);
+                }
+            });
+        });
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

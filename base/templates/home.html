@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AgriLink Market - Direct Farmer-to-Buyer Trading Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Connecting Farmers Directly to Buyers</h1>
+        <p>AgriLink Market empowers smallholder farmers with AI-driven pricing, direct sales, and optimized logistics to maximize income and reduce food waste.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'signup' %}?type=farmer" class="btn btn-secondary">I'm a Farmer</a>
+            <a href="{% url 'signup' %}?type=buyer" class="btn btn-primary">I'm a Buyer</a>
+        </div>
+        <div class="hero-image">
+            <!-- Placeholder for app screenshot -->
+            <div style="background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%); height: 400px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                AgriLink Mobile App Preview
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="container">
+    <h2 class="section-title">Why Choose AgriLink Market?</h2>
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>AI-Price Optimization</h3>
+            <p>Our intelligent system analyzes market trends to suggest the best prices for your produce, maximizing your profits.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <h3>Integrated Logistics</h3>
+            <p>Seamlessly connect with local transport services for efficient delivery, reducing post-harvest losses.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3>Mobile-First Platform</h3>
+            <p>Access our platform via smartphone or simple SMS gateway, making it accessible to all farmers.</p>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">How AgriLink Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>List Your Produce</h3>
+                <p>Farmers easily post available crops with harvest dates via app or SMS.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>AI Price Suggestion</h3>
+                <p>Our system analyzes market data to recommend optimal selling prices.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Connect with Buyers</h3>
+                <p>Restaurants, shops, and bulk buyers browse and purchase directly.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Secure Delivery & Payment</h3>
+                <p>Integrated logistics and M-Pesa ensure smooth transactions.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Pricing Section -->
+<section class="ai-pricing container">
+    <h2 class="section-title">Intelligent Price Discovery</h2>
+    <div class="ai-content">
+        <div class="ai-text">
+            <h3>Maximize Your Earnings with AI</h3>
+            <p>Our machine learning algorithms analyze historical pricing data, current market demand, seasonal trends, and regional variations to provide accurate price recommendations.</p>
+            <p>Farmers receive fair value for their produce while buyers get competitive prices, creating a win-win marketplace.</p>
+            <a href="{% url 'marketplace' %}" class="btn btn-primary" style="margin-top: 20px;">See Price Trends</a>
+        </div>
+        <div class="ai-visual">
+            <h3>Current Market Prices</h3>
+            <div class="price-chart">
+                <!-- Simple chart representation -->
+                <div class="chart-bar" style="left: 20px; height: 70%;"></div>
+                <div class="chart-bar" style="left: 60px; height: 90%;"></div>
+                <div class="chart-bar" style="left: 100px; height: 60%;"></div>
+                <div class="chart-bar" style="left: 140px; height: 85%;"></div>
+                <div class="chart-bar" style="left: 180px; height: 75%;"></div>
+                <div class="chart-bar" style="left: 220px; height: 95%;"></div>
+            </div>
+            <p>Real-time price analysis for maize, tomatoes, potatoes, and more</p>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title">Success Stories</h2>
+        <div class="testimonial-cards">
+            {% for testimonial in testimonials %}
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "{{ testimonial.content }}"
+                </div>
+                <div class="testimonial-author">- {{ testimonial.user.username }}</div>
+            </div>
+            {% empty %}
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "AgriLink helped me increase my income by 40% by connecting me directly with restaurants in Nairobi. No more middlemen taking my profits!"
+                </div>
+                <div class="testimonial-author">- Samuel K., Farmer in Nakuru</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "As a restaurant owner, I now get fresh produce directly from farmers at fair prices. The quality is exceptional and delivery is always on time."
+                </div>
+                <div class="testimonial-author">- Grace W., Restaurant Owner in Nairobi</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

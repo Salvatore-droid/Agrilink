@@ -1,0 +1,685 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Marketplace - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Marketplace Header */
+    .marketplace-header {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        color: var(--white);
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .marketplace-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .marketplace-stats {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stat i {
+        font-size: 24px;
+        color: var(--secondary-light);
+    }
+
+    /* Marketplace Content */
+    .marketplace-content {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+
+    /* Filters Sidebar */
+    .filters-sidebar {
+        flex: 0 0 280px;
+        background: var(--white);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: var(--shadow);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filters-sidebar h3 {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        color: var(--primary-dark);
+    }
+
+    .filter-group {
+        margin-bottom: 25px;
+    }
+
+    .filter-group h4 {
+        margin-bottom: 15px;
+        color: var(--text-dark);
+        font-size: 1.1rem;
+    }
+
+    .filter-options {
+        list-style: none;
+    }
+
+    .filter-options li {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-options input {
+        margin-right: 10px;
+    }
+
+    .price-range {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .price-inputs {
+        display: flex;
+        gap: 10px;
+    }
+
+    .price-inputs input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .ai-recommendation {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+        color: var(--white);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .ai-recommendation h4 {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Products Grid */
+    .products-section {
+        flex: 1;
+    }
+
+    .products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .search-bar {
+        display: flex;
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .search-bar input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px 0 0 5px;
+        font-size: 16px;
+    }
+
+    .search-bar button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0 20px;
+        border-radius: 0 5px 5px 0;
+        cursor: pointer;
+    }
+
+    .sort-options select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .product-card {
+        background: var(--white);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+    }
+
+    .product-image {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: var(--primary);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--secondary);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .product-category {
+        color: var(--primary);
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+    }
+
+    .product-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--text-light);
+        margin-bottom: 15px;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .price-main {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .price-ai {
+        font-size: 0.9rem;
+        color: var(--secondary);
+        background: #fff8e1;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .price-ai.best { background: #e8f5e8; color: var(--primary); }
+    .price-ai.good { background: #fff8e1; color: var(--secondary); }
+    .price-ai.fair { background: #e3f2fd; color: #1976d2; }
+    .price-ai.high { background: #ffebee; color: #d32f2f; }
+
+    .price-ai i {
+        margin-right: 5px;
+    }
+
+    .product-seller {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .seller-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    .seller-info h4 {
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .seller-info p {
+        font-size: 12px;
+        color: var(--text-light);
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .product-actions button {
+        flex: 1;
+    }
+
+    .wishlist-btn.active {
+        color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .wishlist-btn.active i {
+        font-weight: 900;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+        gap: 10px;
+    }
+
+    .pagination button {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .pagination button.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .pagination button:hover:not(.active) {
+        background: #f5f5f5;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-light);
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 968px) {
+        .marketplace-content {
+            flex-direction: column;
+        }
+        
+        .filters-sidebar {
+            flex: 1;
+            width: 100%;
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .products-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .search-bar {
+            max-width: 100%;
+        }
+
+        .marketplace-stats {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .product-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Marketplace Header -->
+<section class="marketplace-header">
+    <div class="container">
+        <h1>Fresh Produce Marketplace</h1>
+        <p>Discover the best prices for farm-fresh products directly from Kenyan farmers</p>
+        <div class="marketplace-stats">
+            <div class="stat">
+                <i class="fas fa-tractor"></i>
+                <div>
+                    <strong>{{ stats.active_farmers }}+</strong> Active Farmers
+                </div>
+            </div>
+            <div class="stat">
+                <i class="fas fa-shopping-basket"></i>
+                <div>
+                    <strong>{{ stats.total_products }}+</strong> Products Available
+                </div>
+            </div>
+            <div class="stat">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <strong>{{ stats.counties_covered }}+</strong> Counties Covered
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Marketplace Content -->
+<div class="container">
+    <div class="marketplace-content">
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar">
+            <h3>Filter Products</h3>
+            
+            <form method="get" id="filter-form">
+                <div class="filter-group">
+                    <h4>Category</h4>
+                    <ul class="filter-options">
+                        {% for category in categories %}
+                        <li>
+                            <input type="checkbox" name="category" value="{{ category.name }}" 
+                                   id="cat-{{ category.id }}" 
+                                   {% if category.name in current_filters.category %}checked{% endif %}>
+                            <label for="cat-{{ category.id }}">{{ category.name }}</label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="filter-group">
+                    <h4>Price Range (KES)</h4>
+                    <div class="price-range">
+                        <div class="price-inputs">
+                            <input type="number" name="min_price" placeholder="Min" value="{{ current_filters.min_price }}">
+                            <input type="number" name="max_price" placeholder="Max" value="{{ current_filters.max_price }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <h4>Location</h4>
+                    <select name="location" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="all">All Kenya</option>
+                        <option value="nairobi" {% if current_filters.location == 'nairobi' %}selected{% endif %}>Nairobi</option>
+                        <option value="nakuru" {% if current_filters.location == 'nakuru' %}selected{% endif %}>Nakuru</option>
+                        <option value="eldoret" {% if current_filters.location == 'eldoret' %}selected{% endif %}>Eldoret</option>
+                        <option value="kisumu" {% if current_filters.location == 'kisumu' %}selected{% endif %}>Kisumu</option>
+                        <option value="mombasa" {% if current_filters.location == 'mombasa' %}selected{% endif %}>Mombasa</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <h4>Sort By</h4>
+                    <select name="sort_by" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="recommended" {% if current_filters.sort_by == 'recommended' %}selected{% endif %}>Recommended</option>
+                        <option value="price_low" {% if current_filters.sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if current_filters.sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="recent" {% if current_filters.sort_by == 'recent' %}selected{% endif %}>Recently Added</option>
+                        <option value="harvest" {% if current_filters.sort_by == 'harvest' %}selected{% endif %}>Harvest Date</option>
+                    </select>
+                </div>
+                
+                {% if ai_recommendations %}
+                <div class="ai-recommendation">
+                    <h4><i class="fas fa-robot"></i> AI Recommendation</h4>
+                    <p>{{ ai_recommendations.0.recommendation }}</p>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Apply Filters</button>
+                <a href="{% url 'marketplace' %}" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Clear Filters</a>
+            </form>
+        </aside>
+        
+        <!-- Products Section -->
+        <section class="products-section">
+            <div class="products-header">
+                <form method="get" class="search-bar">
+                    <input type="text" name="search" placeholder="Search for produce (e.g., tomatoes, maize)" value="{{ current_filters.search }}">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+                <div class="sort-options">
+                    <span>{{ products.paginator.count }} products found</span>
+                </div>
+            </div>
+            
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <div class="product-image" style="background-color: {% cycle '#ffcdd2' '#c8e6c9' '#fff9c4' '#e1bee7' '#bbdefb' '#ffcc80' %};">
+                        {% if forloop.first and forloop.counter0 == 0 %}
+                        <div class="product-badge">AI Recommended</div>
+                        {% endif %}
+                        <i class="{{ product.category.icon|default:'fas fa-seedling' }}"></i>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <h3 class="product-title">{{ product.name }}</h3>
+                        <div class="product-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> {{ product.location }}</span>
+                            <span><i class="far fa-calendar"></i> 
+                                {% if product.harvest_date == today %}
+                                Today
+                                {% else %}
+                                {{ product.harvest_date|timeuntil }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="product-price">
+                            <div class="price-main">KES {{ product.price }}</div>
+                            {% if product.ai_suggestion %}
+                            <div class="price-ai {{ product.ai_suggestion.price_label }}">
+                                <i class="fas fa-bolt"></i>
+                                {{ product.ai_suggestion.price_label|title|cut:"_price" }} Price
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-seller">
+                            <div class="seller-avatar">
+                                {{ product.farmer.first_name|first|default:product.farmer.username|first }}{{ product.farmer.last_name|first|default:'' }}
+                            </div>
+                            <div class="seller-info">
+                                <h4>{{ product.farmer.get_full_name|default:product.farmer.username }}</h4>
+                                <p>
+                                    {% if product.reviews.count > 0 %}
+                                    {{ product.reviews.avg_rating|default:0 }} ★ ({{ product.reviews.count }} reviews)
+                                    {% else %}
+                                    New Seller
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="product-actions">
+                            {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'buy_product' product.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-small">Buy Now</button>
+                            </form>
+                            <form method="post" action="{% url 'add_to_wishlist' product.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline btn-small wishlist-btn {% if product.id in wishlist_product_ids %}active{% endif %}">
+                                    <i class="{% if product.id in wishlist_product_ids %}fas{% else %}far{% endif %} fa-heart"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <a href="{% url 'login' %}?next={% url 'marketplace' %}" class="btn btn-primary btn-small">Login to Buy</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div class="pagination">
+                {% if products.has_previous %}
+                <a href="?page={{ products.previous_page_number }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                    <span class="btn btn-primary">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                    <a href="?page={{ num }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No products found</h3>
+                <p>Try adjusting your filters or search terms</p>
+                <a href="{% url 'marketplace' %}" class="btn btn-primary">Clear Filters</a>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const filterForm = document.getElementById('filter-form');
+        const filterInputs = filterForm.querySelectorAll('input, select');
+        
+        filterInputs.forEach(input => {
+            if (input.type !== 'text' && input.name !== 'search') {
+                input.addEventListener('change', function() {
+                    filterForm.submit();
+                });
+            }
+        });
+        
+        // Favorite button functionality
+        const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.classList.contains('active')) {
+                    this.innerHTML = '<i class="fas fa-heart"></i>';
+                    this.classList.add('active');
+                } else {
+                    this.innerHTML = '<i class="far fa-heart"></i>';
+                    this.classList.remove('active');
+                }
+            });
+        });
+        
+        // Price range validation
+        const minPriceInput = document.querySelector('input[name="min_price"]');
+        const maxPriceInput = document.querySelector('input[name="max_price"]');
+        
+        if (minPriceInput && maxPriceInput) {
+            minPriceInput.addEventListener('blur', function() {
+                if (this.value && maxPriceInput.value && parseFloat(this.value) > parseFloat(maxPriceInput.value)) {
+                    maxPriceInput.value = this.value;
+                }
+            });
+            
+            maxPriceInput.addEventListener('blur', function() {
+                if (this.value && minPriceInput.value && parseFloat(this.value) < parseFloat(minPriceInput.value)) {
+                    minPriceInput.value = this.value;
+                }
+            });
+        }
+        
+        // Load AI recommendations
+        function loadAIRecommendations() {
+            fetch('{% url "ai_recommendations_api" %}')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('AI Recommendations:', data);
+                    // You can use these recommendations to highlight products
+                })
+                .catch(error => console.error('Error loading AI recommendations:', error));
+        }
+        
+        // Load recommendations if user is logged in
+        {% if user.is_authenticated %}
+        loadAIRecommendations();
+        {% endif %}
+    });
+</script>
+{% endblock %}
