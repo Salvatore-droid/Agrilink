@@ -3,148 +3,150 @@ AgriLink Market 🌱
 A comprehensive farmer-to-buyer agricultural marketplace platform that connects Kenyan farmers directly with buyers using AI-powered pricing and recommendations.
 Table of Contents
 
-    Features
+-Features
 
-    Technology Stack
+-Technology Stack
 
-    Installation
+-Installation
 
-    Project Structure
+-Project Structure
 
-    Database Models
+-Database Models
 
-    API Endpoints
+-API Endpoints
 
-    AI Features
+-AI Features
 
-    Screenshots
+-Screenshots
 
-    Contributing
+-Contributing
 
-    License
+-License
 
-Features
+-Features
+
 🎯 Core Functionality
 
-    Multi-user System: Farmers, Buyers, and Both roles
+-Multi-user System: Farmers, Buyers, and Both roles
 
-    Product Marketplace: Browse, search, and filter agricultural products
+-Product Marketplace: Browse, search, and filter agricultural products
 
-    AI-Powered Pricing: Smart price suggestions using machine learning
+-AI-Powered Pricing: Smart price suggestions using machine learning
 
-    Price Suggestions: Buyers can suggest prices to farmers
+-Price Suggestions: Buyers can suggest prices to farmers
 
-    Wishlist & Orders: Save products and place orders
+-Wishlist & Orders: Save products and place orders
 
-    Market Trends: Real-time market insights and analytics
+-Market Trends: Real-time market insights and analytics
 
-    Secure Authentication: User registration, login, and security settings
+-Secure Authentication: User registration, login, and security settings
 
 🤖 AI-Powered Features
 
-    Optimal Price Calculation: AI suggests best prices based on market data
+-Optimal Price Calculation: AI suggests best prices based on market data
 
-    Personalized Recommendations: Product suggestions based on user behavior
+-Personalized Recommendations: Product suggestions based on user behavior
 
-    Market Trend Analysis: Predictive analytics for price trends
+-Market Trend Analysis: Predictive analytics for price trends
 
-    Demand Forecasting: AI predicts product demand patterns
+-Demand Forecasting: AI predicts product demand patterns
 
 💼 User Dashboards
 
-    Farmer Dashboard: Manage products, view price suggestions, track orders
+-Farmer Dashboard: Manage products, view price suggestions, track orders
 
-    Buyer Dashboard: Browse products, suggest prices, track purchases
+-Buyer Dashboard: Browse products, suggest prices, track purchases
 
-    Admin Panel: Comprehensive management with Jazzmin interface
+-Admin Panel: Comprehensive management with Jazzmin interface
 
 Technology Stack
+
 Backend
 
-    Django 4.2+: Python web framework
+Django 4.2+: Python web framework
 
-    Django REST Framework: API development
+Django REST Framework: API development
 
-    PostgreSQL: Database (production)
+PostgreSQL: Database (production)
 
-    SQLite: Database (development)
+SQLite: Database (development)
 
-    Pillow: Image processing
+-Pillow: Image processing
 
-    Jazzmin: Admin interface customization
+-Jazzmin: Admin interface customization
 
 Frontend
 
-    HTML5/CSS3: Responsive design
+-HTML5/CSS3: Responsive design
 
-    JavaScript: Interactive features
+-JavaScript: Interactive features
 
-    Font Awesome: Icons
+-Font Awesome: Icons
 
-    Custom CSS: Professional styling
+-Custom CSS: Professional styling
 
 AI/ML
 
-    Custom AI Service: Price optimization algorithms
+-Custom AI Service: Price optimization algorithms
 
-    Market Analysis: Trend prediction models
+-Market Analysis: Trend prediction models
 
-    Recommendation Engine: Personalized suggestions
+-Recommendation Engine: Personalized suggestions
 
 Installation
 Prerequisites
 
-    Python 3.8+
+Python 3.8+
 
-    PostgreSQL (optional, SQLite for development)
+PostgreSQL (optional, SQLite for development)
 
-    Virtual Environment
+Virtual Environment
 
 Setup Instructions
 
-    Clone the Repository
-    bash
-
-git clone https://github.com/your-username/agrilink-market.git
-cd agrilink-market
+Clone the Repository
+bash
+    
+    git clone https://github.com/your-username/agrilink-market.git
+    cd agrilink-market
 
 Create Virtual Environment
 bash
-
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+    
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 Install Dependencies
 bash
 
-pip install -r requirements.txt
+    pip install -r requirements.txt
 
 Environment Configuration
 bash
 
-cp .env.example .env
-# Edit .env with your configuration
+    cp .env.example .env
+    # Edit .env with your configuration
 
 Database Setup
 bash
-
-python manage.py makemigrations
-python manage.py migrate
+    
+    python manage.py makemigrations
+    python manage.py migrate
 
 Create Superuser
 bash
 
-python manage.py createsuperuser
+    python manage.py createsuperuser
 
 Load Sample Data (Optional)
 bash
 
-python manage.py loaddata sample_data.json
+    python manage.py loaddata sample_data.json
 
 Run Development Server
 bash
 
-python manage.py runserver
+    python manage.py runserver
 
 Visit http://localhost:8000 to view the application.
 Project Structure
@@ -169,80 +171,80 @@ agrilink-market/
 Database Models
 Core Models
 
-    UserProfile: Extended user information with farmer/buyer roles
+-UserProfile: Extended user information with farmer/buyer roles
 
-    Product: Agricultural products with pricing and availability
+-Product: Agricultural products with pricing and availability
 
-    ProductCategory: Product categorization
+-ProductCategory: Product categorization
 
-    Order: Purchase orders and transactions
+-Order: Purchase orders and transactions
 
-    PriceSuggestion: AI-generated price recommendations
+-PriceSuggestion: AI-generated price recommendations
 
 Authentication & Security
 
-    LoginHistory: User login tracking
+-LoginHistory: User login tracking
 
-    SecuritySettings: Two-factor authentication and security preferences
+-SecuritySettings: Two-factor authentication and security preferences
 
-    PasswordResetToken: Secure password reset functionality
+-PasswordResetToken: Secure password reset functionality
 
 Marketplace Features
 
-    Wishlist: User saved products
+-Wishlist: User saved products
 
-    ProductReview: Customer reviews and ratings
+-ProductReview: Customer reviews and ratings
 
-    MarketTrend: Market analysis data
+-MarketTrend: Market analysis data
 
-    PriceSuggestionRequest: Buyer price requests to farmers
+-PriceSuggestionRequest: Buyer price requests to farmers
 
-    FarmerPriceResponse: Farmer responses to price suggestions
+-FarmerPriceResponse: Farmer responses to price suggestions
 
 AI & Analytics
 
-    AIRecommendation: Personalized product suggestions
+-AIRecommendation: Personalized product suggestions
 
-    SearchHistory: User search behavior tracking
+-SearchHistory: User search behavior tracking
 
-    PriceSuggestion: AI-generated pricing insights
+-PriceSuggestion: AI-generated pricing insights
 
 API Endpoints
 Authentication
 
-    POST /api/login/ - User authentication
+  POST /api/login/ - User authentication
 
-    POST /api/logout/ - User logout
+  POST /api/logout/ - User logout
 
-    POST /api/register/ - User registration
+  POST /api/register/ - User registration
 
 Products
 
-    GET /api/products/ - List all products
+  GET /api/products/ - List all products
 
-    POST /api/products/ - Create new product (farmers)
+  POST /api/products/ - Create new product (farmers)
 
-    GET /api/products/{id}/ - Product details
+  GET /api/products/{id}/ - Product details
 
-    PUT /api/products/{id}/ - Update product
+  PUT /api/products/{id}/ - Update product
 
 AI Features
 
-    GET /api/ai-recommendations/ - Personalized recommendations
+  GET /api/ai-recommendations/ - Personalized recommendations
 
-    GET /api/price-suggestions/ - AI price suggestions
+  GET /api/price-suggestions/ - AI price suggestions
 
-    POST /api/market-trends/ - Market analysis data
+  POST /api/market-trends/ - Market analysis data
 
 Orders & Marketplace
 
-    GET /api/orders/ - User orders
+  GET /api/orders/ - User orders
 
-    POST /api/orders/ - Create new order
+  POST /api/orders/ - Create new order
 
-    GET /api/wishlist/ - User wishlist
+  GET /api/wishlist/ - User wishlist
 
-    POST /api/wishlist/{product_id}/ - Add to wishlist
+POST /api/wishlist/{product_id}/ - Add to wishlist
 
 AI Features
 Price Optimization
@@ -320,20 +322,20 @@ Support
 
 For support and questions:
 
-    Email: support@agrilink.co.ke
+  Email: geniusokwemba53@gmail.com
 
-    Issues: GitHub Issues
+  Issues: GitHub Issues
 
-    Documentation: Project Wiki
+  Documentation: Project Wiki
 
 Acknowledgments
 
-    Kenyan Agricultural Board for market data insights
+  Kenyan Agricultural Board for market data insights
 
-    Django community for excellent documentation
+  Django community for excellent documentation
 
-    Font Awesome for beautiful icons
+  Font Awesome for beautiful icons
 
-    Contributors and testers
+  Contributors and testers
 
 AgriLink Market - Transforming agriculture through technology, connecting farmers directly to buyers for mutual benefit. 🌱🚀
