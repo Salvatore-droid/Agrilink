@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Price Suggestions - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    .price-suggestions-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .suggestions-container {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+
+    .suggestions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .suggestion-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+
+    .suggestion-card.high-urgency { border-left-color: #e74c3c; }
+    .suggestion-card.medium-urgency { border-left-color: #f39c12; }
+    .suggestion-card.low-urgency { border-left-color: #27ae60; }
+
+    .suggestion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .suggestion-price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .urgency-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .urgency-high { background: #e74c3c; color: white; }
+    .urgency-medium { background: #f39c12; color: white; }
+    .urgency-low { background: #27ae60; color: white; }
+
+    .suggestion-form {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .user-suggestions {
+        margin-top: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="price-suggestions-header">
+    <div class="container">
+        <h1>Price Suggestions Marketplace</h1>
+        <p>Tell farmers what you want to buy and at what price. Get the best deals!</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="suggestions-container">
+        <!-- Active Suggestions List -->
+        <div class="suggestions-list">
+            <h2>Active Price Requests</h2>
+            
+            {% if active_suggestions %}
+                {% for suggestion in active_suggestions %}
+                <div class="suggestion-card {{ suggestion.urgency }}-urgency">
+                    <div class="suggestion-header">
+                        <div>
+                            <h3>{{ suggestion.product_name }}</h3>
+                            <p class="text-muted">{{ suggestion.category.name }} • {{ suggestion.location }}</p>
+                        </div>
+                        <div class="suggestion-price">
+                            KES {{ suggestion.suggested_price }}
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-details">
+                        <p><strong>Quantity Needed:</strong> {{ suggestion.quantity_needed }} {{ suggestion.unit }}</p>
+                        {% if suggestion.description %}
+                        <p><strong>Description:</strong> {{ suggestion.description }}</p>
+                        {% endif %}
+                        <p><strong>Buyer:</strong> {{ suggestion.buyer.get_full_name|default:suggestion.buyer.username }}</p>
+                        <p><strong>Expires:</strong> {{ suggestion.expires_at|timeuntil }} from now</p>
+                    </div>
+                    
+                    <div class="suggestion-footer">
+                        <span class="urgency-badge urgency-{{ suggestion.urgency }}">
+                            {{ suggestion.urgency }} urgency
+                        </span>
+                        {% if user.is_authenticated and user.profile.user_type == 'farmer' or user.profile.user_type == 'both' %}
+                        <a href="{% url 'respond_to_suggestion' suggestion.id %}" class="btn btn-primary btn-small">
+                            Respond to Request
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comments-dollar fa-3x"></i>
+                    <h3>No active price suggestions</h3>
+                    <p>Be the first to post a price suggestion!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Create Suggestion Form -->
+        <div class="suggestion-form">
+            <h3>Create Price Suggestion</h3>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="product_name">Product Name *</label>
+                    <input type="text" id="product_name" name="product_name" class="form-control" required 
+                           placeholder="e.g., Fresh Tomatoes, Organic Maize">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" class="form-control" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="suggested_price">Your Suggested Price (KES) *</label>
+                    <input type="number" id="suggested_price" name="suggested_price" class="form-control" 
+                           step="0.01" min="0" required placeholder="e.g., 150.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity_needed">Quantity Needed</label>
+                    <input type="number" id="quantity_needed" name="quantity_needed" class="form-control" 
+                           step="0.01" min="0" placeholder="e.g., 100">
+                </div>
+
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select id="unit" name="unit" class="form-control">
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="ton">Ton</option>
+                        <option value="bag">Bag</option>
+                        <option value="crate">Crate</option>
+                        <option value="piece">Piece</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Your Location *</label>
+                    <input type="text" id="location" name="location" class="form-control" required 
+                           placeholder="e.g., Nairobi, Nakuru">
+                </div>
+
+                <div class="form-group">
+                    <label for="urgency">Urgency</label>
+                    <select id="urgency" name="urgency" class="form-control">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Additional Details</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" 
+                              placeholder="Any specific requirements or details..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Post Price Suggestion
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User's Suggestions -->
+    {% if user_suggestions %}
+    <div class="user-suggestions">
+        <h2>Your Price Suggestions</h2>
+        <div class="suggestions-list">
+            {% for suggestion in user_suggestions %}
+            <div class="suggestion-card">
+                <div class="suggestion-header">
+                    <div>
+                        <h4>{{ suggestion.product_name }}</h4>
+                        <p class="text-muted">{{ suggestion.category.name }} • {{ suggestion.location }}</p>
+                    </div>
+                    <div class="suggestion-price">
+                        KES {{ suggestion.suggested_price }}
+                        <span class="badge badge-{% if suggestion.status == 'active' %}success{% else %}secondary{% endif %}">
+                            {{ suggestion.status }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="suggestion-details">
+                    <p><strong>Responses:</strong> {{ suggestion.responses.count }}</p>
+                    <p><strong>Expires:</strong> {{ suggestion.expires_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

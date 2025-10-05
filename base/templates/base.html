@@ -25,6 +25,10 @@
             --background: #f8f9fa;
             --white: #ffffff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --success: #28A745;
+            --error: #E74C3C;
+            --warning: #FFA500;
+            --info: #17A2B8;
         }
 
         body {
@@ -38,6 +42,140 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+        }
+
+        /* Enhanced Message System */
+        .message-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-alert {
+            padding: 18px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: translateX(120%);
+            animation: slideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .message-alert.hiding {
+            animation: slideOut 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        .message-alert::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            animation: progressBar 5s linear forwards;
+        }
+
+        .message-alert.success {
+            background: linear-gradient(135deg, var(--success), #34ce57);
+            color: white;
+            border-left-color: #1e7e34;
+        }
+
+        .message-alert.error {
+            background: linear-gradient(135deg, var(--error), #ed7669);
+            color: white;
+            border-left-color: #c0392b;
+        }
+
+        .message-alert.warning {
+            background: linear-gradient(135deg, var(--warning), #ffb347);
+            color: white;
+            border-left-color: #cc8400;
+        }
+
+        .message-alert.info {
+            background: linear-gradient(135deg, var(--info), #5bc0de);
+            color: white;
+            border-left-color: #117a8b;
+        }
+
+        .message-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.4;
+            opacity: 0.95;
+        }
+
+        .message-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 15px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .message-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        @keyframes slideIn {
+            to { 
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            to { 
+                transform: translateX(120%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes progressBar {
+            from { width: 100%; }
+            to { width: 0%; }
         }
 
         /* Header Styles */
@@ -127,29 +265,6 @@
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow);
-        }
-
-        /* Messages */
-        .messages {
-            margin: 20px 0;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
         }
 
         /* Hero Section */
@@ -457,6 +572,17 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .message-container {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .message-alert {
+                max-width: 100%;
+                padding: 15px;
+            }
+
             .navbar {
                 flex-direction: column;
                 padding: 15px 0;
@@ -519,11 +645,54 @@
                 padding: 8px 16px;
                 font-size: 14px;
             }
+
+            .message-alert {
+                padding: 12px 15px;
+            }
+
+            .message-title {
+                font-size: 14px;
+            }
+
+            .message-text {
+                font-size: 13px;
+            }
+
+            .message-icon {
+                font-size: 1.3rem;
+                margin-right: 10px;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Enhanced Message System -->
+    <div class="message-container" id="messageContainer">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message-alert {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                    <i class="message-icon fas 
+                        {% if message.tags == 'success' %}fa-check-circle
+                        {% elif message.tags == 'error' %}fa-exclamation-circle
+                        {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                        {% else %}fa-info-circle{% endif %}">
+                    </i>
+                    <div class="message-content">
+                        <div class="message-title">
+                            {% if message.tags == 'success' %}Success!
+                            {% elif message.tags == 'error' %}Error
+                            {% elif message.tags == 'warning' %}Warning
+                            {% else %}Notice{% endif %}
+                        </div>
+                        <div class="message-text">{{ message }}</div>
+                    </div>
+                    <button class="message-close" onclick="removeMessage(this.parentElement)">&times;</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <!-- Header -->
     <header>
         <div class="container">
@@ -551,17 +720,6 @@
             </nav>
         </div>
     </header>
-
-    <!-- Messages -->
-    {% if messages %}
-    <div class="container messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <!-- Main Content -->
     <main>
@@ -621,6 +779,96 @@
     {% block extra_js %}{% endblock %}
     
     <script>
+        // Enhanced Message System
+        class MessageManager {
+            constructor() {
+                this.container = document.getElementById('messageContainer');
+                this.activeMessages = new Set();
+                this.init();
+            }
+
+            init() {
+                // Auto-remove messages after 5 seconds
+                this.container.querySelectorAll('.message-alert').forEach(message => {
+                    this.scheduleRemoval(message, 5000);
+                });
+
+                // Global function to show messages
+                window.showMessage = (text, type = 'info', duration = 5000) => {
+                    this.createMessage(text, type, duration);
+                };
+            }
+
+            createMessage(text, type = 'info', duration = 5000) {
+                const messageId = 'msg-' + Date.now();
+                const message = document.createElement('div');
+                message.className = `message-alert ${type}`;
+                message.setAttribute('data-message-id', messageId);
+
+                const icons = {
+                    success: 'fa-check-circle',
+                    error: 'fa-exclamation-circle',
+                    warning: 'fa-exclamation-triangle',
+                    info: 'fa-info-circle'
+                };
+
+                const titles = {
+                    success: 'Success!',
+                    error: 'Error',
+                    warning: 'Warning',
+                    info: 'Notice'
+                };
+
+                message.innerHTML = `
+                    <i class="message-icon fas ${icons[type]}"></i>
+                    <div class="message-content">
+                        <div class="message-title">${titles[type]}</div>
+                        <div class="message-text">${text}</div>
+                    </div>
+                    <button class="message-close" onclick="messageManager.removeMessage(this.parentElement)">&times;</button>
+                `;
+
+                this.container.appendChild(message);
+                this.activeMessages.add(message);
+                this.scheduleRemoval(message, duration);
+
+                return message;
+            }
+
+            scheduleRemoval(message, duration) {
+                setTimeout(() => {
+                    this.removeMessage(message);
+                }, duration);
+            }
+
+            removeMessage(message) {
+                if (!message || !this.activeMessages.has(message)) return;
+
+                message.classList.add('hiding');
+                this.activeMessages.delete(message);
+
+                setTimeout(() => {
+                    if (message.parentElement) {
+                        message.parentElement.removeChild(message);
+                    }
+                }, 500);
+            }
+
+            clearAll() {
+                this.activeMessages.forEach(message => {
+                    this.removeMessage(message);
+                });
+            }
+        }
+
+        // Initialize message manager
+        const messageManager = new MessageManager();
+
+        // Global function to show messages
+        window.showMessage = function(text, type = 'info', duration = 5000) {
+            return messageManager.createMessage(text, type, duration);
+        };
+
         // Simple animation for chart bars
         document.addEventListener('DOMContentLoaded', function() {
             const bars = document.querySelectorAll('.chart-bar');
@@ -673,6 +921,12 @@
                 if (authButtons) authButtons.style.flexDirection = 'row';
             }
         });
+
+        // Demo messages (remove in production)
+        // setTimeout(() => showMessage('Welcome to AgriLink Market!', 'success'), 1000);
+        // setTimeout(() => showMessage('New products available in marketplace', 'info'), 2000);
+        // setTimeout(() => showMessage('Please complete your profile', 'warning'), 3000);
+        // setTimeout(() => showMessage('Failed to load data', 'error'), 4000);
     </script>
 </body>
 </html>

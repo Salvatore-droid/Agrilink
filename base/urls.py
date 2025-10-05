@@ -38,6 +38,7 @@ urlpatterns = [
     
     # Dashboard and Security
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('buyer-dashboard/', views.buyer_dashboard, name='buyer_dashboard'),
     path('security-settings/', views.security_settings, name='security_settings'),
     
     # Other URLs (from previous implementation)
@@ -60,6 +61,11 @@ urlpatterns = [
     path('api/ai-recommendations/', views.ai_recommendations_api, name='ai_recommendations_api'),
     path('admin/update-market-trends/', views.update_market_trends, name='update_market_trends'),
 
+    path('farmer/add-product/', views.add_product, name='add_product'),
+    path('price-suggestions/', views.price_suggestions_marketplace, name='price_suggestions_marketplace'),
+    path('farmer-dashboard/', views.farmer_dashboard, name='farmer_dashboard'),
+    path('respond-to-suggestion/<int:suggestion_id>/', views.respond_to_price_suggestion, name='respond_to_suggestion'),
+    path('buyer-suggestions/', views.buyer_price_suggestions, name='buyer_price_suggestions'),
 
      # Groq AI URLs
     # path('negotiate/<int:product_id>/', views.start_negotiation, name='start_negotiation'),

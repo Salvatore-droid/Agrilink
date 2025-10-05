@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from django.utils import timezone
-from .models import Product, MarketTrend, PriceSuggestion, ProductCategory
+from .models import *
 
 class AgriAI:
     @staticmethod

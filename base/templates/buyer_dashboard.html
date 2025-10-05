@@ -1,0 +1,1035 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Buyer Dashboard - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Layout */
+    .dashboard {
+        min-height: 100vh;
+        background: linear-gradient(135deg, 
+            rgba(248, 249, 250, 0.95) 0%,
+            rgba(240, 242, 245, 0.9) 100%);
+        padding: 30px 20px;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .welcome-section h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: #0abb13;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #27ae60, #229954);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .welcome-section p {
+        color: #7f8c8d;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+    }
+
+    .action-btn-secondary {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        color: white;
+    }
+
+    .action-btn-outline {
+        background: white;
+        color: #0abb13;
+        border-color: #3498db;
+    }
+
+    .action-btn-success {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        color: white;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3498db, #9b59b6);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-icon.primary {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    .stat-icon.secondary {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    }
+
+    .stat-icon.success {
+        background: linear-gradient(135deg, #27ae60, #229954);
+    }
+
+    .stat-icon.warning {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+
+    .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #0abb13;
+    }
+
+    .stat-trend.negative {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    /* Activity Section */
+    .dashboard-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        color:  #0abb13;
+    }
+
+    .view-all {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .view-all:hover {
+        background: rgba(52, 152, 219, 0.1);
+    }
+
+    /* Orders List */
+    .orders-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .order-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border-left: 4px solid #3498db;
+    }
+
+    .order-card:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .order-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        background: #3498db;
+    }
+
+    .order-content {
+        flex: 1;
+    }
+
+    .order-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+
+    .order-description {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .order-time {
+        color: #7f8c8d;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .order-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d1ecf1; color: #0c5460; }
+    .status-shipped { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+
+    /* Wishlist Grid */
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .wishlist-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .wishlist-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .wishlist-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        margin: 0 auto 15px;
+    }
+
+    .wishlist-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+
+    .wishlist-price {
+        font-weight: 700;
+        color: #27ae60;
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .wishlist-seller {
+        color: #7f8c8d;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    /* Price Suggestions */
+    .suggestions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .suggestion-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        border-left: 4px solid #9b59b6;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-card:hover {
+        background: #e9ecef;
+        transform: translateX(3px);
+    }
+
+    .suggestion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .suggestion-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #9b59b6;
+    }
+
+    .suggestion-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-active { background: #d4edda; color: #155724; }
+    .status-fulfilled { background: #d1ecf1; color: #0c5460; }
+
+    /* AI Recommendations */
+    .recommendations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .recommendation-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .recommendation-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    }
+
+    .recommendation-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        background: linear-gradient(135deg, #e67e22, #d35400);
+        margin: 0 auto 10px;
+    }
+
+    .recommendation-title {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .recommendation-price {
+        font-weight: 700;
+        color: #27ae60;
+        font-size: 16px;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        color: white;
+        margin: 0 auto 20px;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .profile-role {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-transform: capitalize;
+    }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .profile-stat {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .profile-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #3498db;
+        margin-bottom: 4px;
+    }
+
+    .profile-stat-label {
+        font-size: 12px;
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+
+    /* Market Insights */
+    .insights-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .insight-card {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .insight-card:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .insight-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #3498db;
+        margin-bottom: 8px;
+    }
+
+    .insight-label {
+        font-size: 12px;
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #7f8c8d;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .quick-actions {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .wishlist-grid,
+        .recommendations-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header fade-in-up">
+            <div class="welcome-section">
+                <h1>Welcome back, {{ user.first_name|default:user.username }}! 🛒</h1>
+                <p>Your agricultural buying hub - find the best deals and manage your purchases</p>
+            </div>
+            <div class="quick-actions">
+                <a href="{% url 'marketplace' %}" class="action-btn action-btn-primary">
+                    <i class="fas fa-store"></i>
+                    Browse Marketplace
+                </a>
+                <a href="{% url 'price_suggestions_marketplace' %}" class="action-btn action-btn-secondary">
+                    <i class="fas fa-comments-dollar"></i>
+                    Suggest Prices
+                </a>
+                <a href="{% url 'security_settings' %}" class="action-btn action-btn-outline">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Buyer Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card fade-in-up">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        15%
+                    </div>
+                </div>
+                <div class="stat-value">{{ buyer_stats.total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+
+            <div class="stat-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="stat-header">
+                    <div class="stat-icon secondary">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        22%
+                    </div>
+                </div>
+                <div class="stat-value">KES {{ buyer_stats.total_spent }}</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+
+            <div class="stat-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="stat-header">
+                    <div class="stat-icon success">
+                        <i class="fas fa-comments-dollar"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        8%
+                    </div>
+                </div>
+                <div class="stat-value">{{ buyer_stats.active_suggestions }}</div>
+                <div class="stat-label">Active Price Requests</div>
+            </div>
+
+            <div class="stat-card fade-in-up" style="animation-delay: 0.3s;">
+                <div class="stat-header">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        12%
+                    </div>
+                </div>
+                <div class="stat-value">{{ buyer_stats.wishlist_count }}</div>
+                <div class="stat-label">Wishlist Items</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column - Main Content -->
+            <div class="left-column">
+                <!-- Recent Orders -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-clipboard-list"></i>
+                            Recent Orders
+                        </h2>
+                        <a href="#" class="view-all">View All Orders</a>
+                    </div>
+                    <div class="orders-list">
+                        {% for order in buyer_orders %}
+                        <div class="order-card">
+                            <div class="order-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="order-content">
+                                <div class="order-title">{{ order.product.name }}</div>
+                                <div class="order-description">
+                                    {{ order.quantity }} {{ order.product.unit }} • KES {{ order.total_price }}
+                                </div>
+                                <div class="order-time">Ordered {{ order.created_at|timesince }} ago</div>
+                            </div>
+                            <div class="order-status status-{{ order.status }}">
+                                {{ order.status|title }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h3>No Orders Yet</h3>
+                            <p>Start shopping by browsing products in the marketplace</p>
+                            <a href="{% url 'marketplace' %}" class="action-btn action-btn-primary">
+                                <i class="fas fa-store"></i>
+                                Browse Marketplace
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- My Wishlist -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-heart"></i>
+                            My Wishlist
+                        </h2>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="wishlist-grid">
+                        {% for item in wishlist_items %}
+                        <div class="wishlist-card">
+                            <div class="wishlist-icon">
+                                <i class="{{ item.product.category.icon|default:'fas fa-seedling' }}"></i>
+                            </div>
+                            <div class="wishlist-title">{{ item.product.name }}</div>
+                            <div class="wishlist-price">KES {{ item.product.price }}</div>
+                            <div class="wishlist-seller">By {{ item.product.farmer.username }}</div>
+                            <a href="{% url 'product_detail' item.product.id %}" class="action-btn action-btn-outline" style="padding: 8px 16px; font-size: 12px;">
+                                View Product
+                            </a>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <h3>Wishlist Empty</h3>
+                            <p>Add products to your wishlist for quick access</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- My Price Suggestions -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-comments-dollar"></i>
+                            My Price Requests
+                        </h2>
+                        <a href="{% url 'price_suggestions_marketplace' %}" class="view-all">Create New</a>
+                    </div>
+                    <div class="suggestions-list">
+                        {% for suggestion in price_suggestions %}
+                        <div class="suggestion-card">
+                            <div class="suggestion-header">
+                                <div>
+                                    <h4>{{ suggestion.product_name }}</h4>
+                                    <p class="text-muted">{{ suggestion.category.name }} • {{ suggestion.location }}</p>
+                                </div>
+                                <div class="suggestion-price">
+                                    KES {{ suggestion.suggested_price }}
+                                </div>
+                            </div>
+                            <div class="suggestion-details">
+                                <p><strong>Quantity:</strong> {{ suggestion.quantity_needed }} {{ suggestion.unit }}</p>
+                                <p><strong>Responses:</strong> {{ suggestion.responses.count }}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="suggestion-status status-{{ suggestion.status }}">
+                                        {{ suggestion.status|title }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-comments-dollar"></i>
+                            <h3>No Price Requests</h3>
+                            <p>Suggest prices to farmers and get the best deals</p>
+                            <a href="{% url 'price_suggestions_marketplace' %}" class="action-btn action-btn-secondary">
+                                <i class="fas fa-plus"></i>
+                                Create Price Request
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Sidebar -->
+            <div class="right-column">
+                <!-- Profile Card -->
+                <div class="dashboard-section profile-card fade-in-up">
+                    <div class="profile-avatar">
+                        {{ user.first_name|first|default:user.username|first }}{{ user.last_name|first|default:'' }}
+                    </div>
+                    <h2 class="profile-name">{{ user.get_full_name|default:user.username }}</h2>
+                    <div class="profile-role">Premium Buyer</div>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">{{ buyer_stats.total_orders }}</div>
+                            <div class="profile-stat-label">Orders</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">{{ buyer_stats.wishlist_count }}</div>
+                            <div class="profile-stat-label">Wishlist</div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'security_settings' %}" class="action-btn action-btn-outline" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-user-edit"></i>
+                        Edit Profile
+                    </a>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-robot"></i>
+                            AI Recommendations
+                        </h2>
+                    </div>
+                    <div class="recommendations-grid">
+                        {% for product in ai_recommendations %}
+                        <div class="recommendation-card">
+                            <div class="recommendation-icon">
+                                <i class="{{ product.category.icon|default:'fas fa-seedling' }}"></i>
+                            </div>
+                            <div class="recommendation-title">{{ product.name|truncatewords:2 }}</div>
+                            <div class="recommendation-price">KES {{ product.price }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="padding: 20px; grid-column: 1 / -1;">
+                            <p>No recommendations yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Market Insights -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-chart-line"></i>
+                            Market Trends
+                        </h2>
+                    </div>
+                    <div class="insights-grid">
+                        {% for trend in market_trends %}
+                        <div class="insight-card">
+                            <div class="insight-value">KES {{ trend.average_price }}</div>
+                            <div class="insight-label">{{ trend.category.name }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="insight-card">
+                            <div class="insight-value">KES 245</div>
+                            <div class="insight-label">Maize/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">KES 180</div>
+                            <div class="insight-label">Tomatoes/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">KES 120</div>
+                            <div class="insight-label">Potatoes/kg</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-value">+5%</div>
+                            <div class="insight-label">Price Trend</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-section fade-in-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-bolt"></i>
+                            Quick Actions
+                        </h2>
+                    </div>
+                    <div class="orders-list">
+                        <a href="{% url 'marketplace' %}?sort_by=price_low" class="order-card" style="text-decoration: none;">
+                            <div class="order-icon" style="background: #27ae60;">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="order-content">
+                                <div class="order-title">Best Deals</div>
+                                <div class="order-description">Find lowest prices</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'price_suggestions_marketplace' %}" class="order-card" style="text-decoration: none;">
+                            <div class="order-icon" style="background: #9b59b6;">
+                                <i class="fas fa-comments-dollar"></i>
+                            </div>
+                            <div class="order-content">
+                                <div class="order-title">Suggest Prices</div>
+                                <div class="order-description">Get custom offers</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'marketplace' %}?category=Fruits" class="order-card" style="text-decoration: none;">
+                            <div class="order-icon" style="background: #e74c3c;">
+                                <i class="fas fa-apple-alt"></i>
+                            </div>
+                            <div class="order-content">
+                                <div class="order-title">Fresh Fruits</div>
+                                <div class="order-description">Seasonal produce</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add interactive animations
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Add hover effects to cards
+        const interactiveCards = document.querySelectorAll('.order-card, .wishlist-card, .suggestion-card');
+        interactiveCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Real-time market data simulation
+        function updateMarketData() {
+            const insights = document.querySelectorAll('.insight-value');
+            if (insights.length > 0) {
+                const changes = ['+2%', '-1%', '+3%', '+1%'];
+                const randomChange = changes[Math.floor(Math.random() * changes.length)];
+                
+                // Update trend indicator
+                insights.forEach((insight, index) => {
+                    if (index === insights.length - 1) {
+                        insight.textContent = randomChange;
+                    }
+                });
+            }
+        }
+
+        // Update market data every 30 seconds
+        setInterval(updateMarketData, 30000);
+
+        // Add loading states to action buttons
+        const actionButtons = document.querySelectorAll('.action-btn');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.href && !this.href.includes('#')) {
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                    this.style.pointerEvents = 'none';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalContent;
+                        this.style.pointerEvents = 'auto';
+                    }, 2000);
+                }
+            });
+        });
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

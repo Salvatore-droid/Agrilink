@@ -1,6 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import *
-from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,7 +6,11 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.http import JsonResponse
 import re
-
+from .models import *
+from django.db.models import Q, Count, Avg
+from django.http import JsonResponse
+from datetime import timedelta  # Add this import
+from .ai_service import AgriAI
 
 def home(request):
     featured_products = Product.objects.filter(is_available=True).order_by('-created_at')[:6]
@@ -281,34 +283,80 @@ def signup(request):
 
 @login_required
 def dashboard(request):
+    """Redirect to appropriate dashboard based on user type"""
     try:
         user_profile = request.user.profile
+        if user_profile.user_type == 'buyer':
+            return redirect('buyer_dashboard')
+        elif user_profile.user_type == 'farmer':
+            return redirect('farmer_dashboard')
+        else:  # both
+            # You can create a combined dashboard or redirect to buyer as default
+            return redirect('buyer_dashboard')
     except UserProfile.DoesNotExist:
-        # Create a default profile if it doesn't exist
+        # Create default profile and redirect
         user_profile = UserProfile.objects.create(
             user=request.user,
-            user_type='farmer',  # default
+            user_type='buyer',
             phone_number='',
             location=''
         )
+        return redirect('buyer_dashboard')
+
+@login_required
+def buyer_dashboard(request):
+    """Enhanced buyer dashboard with price suggestions and orders"""
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(
+            user=request.user,
+            user_type='buyer',
+            phone_number='',
+            location=''
+        )
+    
+    # Get buyer-specific data
+    buyer_orders = Order.objects.filter(buyer=request.user).order_by('-created_at')[:5]
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')[:6]
+    price_suggestions = PriceSuggestionRequest.objects.filter(buyer=request.user).order_by('-created_at')[:5]
+    
+    # Calculate buyer stats
+    total_orders = Order.objects.filter(buyer=request.user).count()
+    total_spent = Order.objects.filter(buyer=request.user).aggregate(
+        total=models.Sum('total_price')
+    )['total'] or 0
+    
+    active_suggestions = PriceSuggestionRequest.objects.filter(
+        buyer=request.user, 
+        status='active'
+    ).count()
+    
+    # Get recent market trends for buyer insights
+    market_trends = MarketTrend.objects.all().order_by('-created_at')[:3]
+    
+    # Get AI recommendations for buyer
+    ai_recommendations = AgriAI.recommend_products_for_user(request.user)[:4]
     
     login_history = LoginHistory.objects.filter(user=request.user).order_by('-login_time')[:5]
     
     context = {
         'user_profile': user_profile,
+        'buyer_orders': buyer_orders,
+        'wishlist_items': wishlist_items,
+        'price_suggestions': price_suggestions,
+        'market_trends': market_trends,
+        'ai_recommendations': ai_recommendations,
         'login_history': login_history,
+        'buyer_stats': {
+            'total_orders': total_orders,
+            'total_spent': total_spent,
+            'active_suggestions': active_suggestions,
+            'wishlist_count': wishlist_items.count(),
+        }
     }
     
-    # Add different context based on user type
-    if user_profile.user_type in ['farmer', 'both']:
-        farmer_products = Product.objects.filter(farmer=request.user)[:5]
-        context['farmer_products'] = farmer_products
-    
-    if user_profile.user_type in ['buyer', 'both']:
-        buyer_orders = Order.objects.filter(buyer=request.user)[:5]
-        context['buyer_orders'] = buyer_orders
-    
-    return render(request, 'dashboard.html', context)
+    return render(request, 'buyer_dashboard.html', context)
 
 @login_required
 def security_settings(request):
@@ -668,3 +716,276 @@ def update_market_trends(request):
             )
     
     return JsonResponse({'status': 'Market trends updated successfully'})
+
+# Add these views to your existing views.py
+
+@login_required
+def price_suggestions_marketplace(request):
+    """View for buyers to see and create price suggestions"""
+    active_suggestions = PriceSuggestionRequest.objects.filter(
+        status='active',
+        expires_at__gt=timezone.now()
+    ).order_by('-created_at')
+    
+    # Get user's own suggestions
+    user_suggestions = PriceSuggestionRequest.objects.filter(
+        buyer=request.user
+    ).order_by('-created_at')
+    
+    categories = ProductCategory.objects.all()
+    
+    if request.method == 'POST':
+        product_name = request.POST.get('product_name')
+        category_id = request.POST.get('category')
+        suggested_price = request.POST.get('suggested_price')
+        quantity_needed = request.POST.get('quantity_needed')
+        unit = request.POST.get('unit')
+        location = request.POST.get('location')
+        urgency = request.POST.get('urgency')
+        description = request.POST.get('description')
+        
+        # Validate required fields
+        errors = []
+        if not product_name:
+            errors.append('Product name is required.')
+        if not category_id:
+            errors.append('Category is required.')
+        if not suggested_price:
+            errors.append('Suggested price is required.')
+        if not location:
+            errors.append('Location is required.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'price_suggestions_marketplace.html', {
+                'active_suggestions': active_suggestions,
+                'user_suggestions': user_suggestions,
+                'categories': categories,
+            })
+        
+        try:
+            category = ProductCategory.objects.get(id=category_id)
+            suggestion = PriceSuggestionRequest.objects.create(
+                buyer=request.user,
+                category=category,
+                product_name=product_name,
+                suggested_price=suggested_price,
+                quantity_needed=quantity_needed,
+                unit=unit,
+                location=location,
+                urgency=urgency,
+                description=description,
+                expires_at=timezone.now() + timedelta(days=7)  # Expires in 7 days
+            )
+            messages.success(request, 'Price suggestion posted successfully! Farmers will see your request.')
+            return redirect('price_suggestions_marketplace')
+        except Exception as e:
+            messages.error(request, f'Error creating price suggestion: {str(e)}')
+    
+    context = {
+        'active_suggestions': active_suggestions,
+        'user_suggestions': user_suggestions,
+        'categories': categories,
+    }
+    return render(request, 'price_suggestions_marketplace.html', context)
+
+@login_required
+def farmer_dashboard(request):
+    """Enhanced farmer dashboard with price suggestions"""
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(
+            user=request.user,
+            user_type='farmer',
+            phone_number='',
+            location=''
+        )
+    
+    # Only show farmer-specific data if user is a farmer
+    farmer_products = Product.objects.filter(farmer=request.user)[:5]
+    
+    # Get relevant price suggestions for the farmer
+    farmer_location = user_profile.location
+    relevant_suggestions = PriceSuggestionRequest.objects.filter(
+        status='active',
+        expires_at__gt=timezone.now()
+    ).filter(
+        Q(location__icontains=farmer_location) | Q(location='all')
+    ).order_by('-created_at')[:10]
+    
+    # Get farmer's responses
+    farmer_responses = FarmerPriceResponse.objects.filter(
+        farmer=request.user
+    ).order_by('-created_at')[:5]
+    
+    login_history = LoginHistory.objects.filter(user=request.user).order_by('-login_time')[:5]
+    
+    context = {
+        'user_profile': user_profile,
+        'farmer_products': farmer_products,
+        'price_suggestions': relevant_suggestions,
+        'farmer_responses': farmer_responses,
+        'login_history': login_history,
+    }
+    
+    return render(request, 'farmer_dashboard.html', context)
+
+@login_required
+def respond_to_price_suggestion(request, suggestion_id):
+    """View for farmers to respond to price suggestions"""
+    suggestion = get_object_or_404(PriceSuggestionRequest, id=suggestion_id, status='active')
+    
+    # Check if user is a farmer
+    try:
+        user_profile = request.user.profile
+        if user_profile.user_type not in ['farmer', 'both']:
+            messages.error(request, 'Only farmers can respond to price suggestions.')
+            return redirect('price_suggestions_marketplace')
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Please complete your profile to respond to price suggestions.')
+        return redirect('price_suggestions_marketplace')
+    
+    if request.method == 'POST':
+        counter_price = request.POST.get('counter_price')
+        available_quantity = request.POST.get('available_quantity')
+        message = request.POST.get('message')
+        
+        # Validate form data
+        errors = []
+        if not available_quantity or float(available_quantity) <= 0:
+            errors.append('Please enter a valid quantity.')
+        if not message or not message.strip():
+            errors.append('Please enter a message to the buyer.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                response = FarmerPriceResponse.objects.create(
+                    farmer=request.user,
+                    price_suggestion=suggestion,
+                    counter_price=counter_price if counter_price else None,
+                    available_quantity=available_quantity,
+                    message=message,
+                    status='countered' if counter_price and float(counter_price) != float(suggestion.suggested_price) else 'pending'
+                )
+                messages.success(request, 'Your response has been sent to the buyer!')
+                return redirect('farmer_dashboard')
+            except Exception as e:
+                messages.error(request, f'Error sending response: {str(e)}')
+    
+    context = {
+        'suggestion': suggestion,
+    }
+    return render(request, 'respond_to_suggestion.html', context)
+
+@login_required
+def buyer_price_suggestions(request):
+    """View for buyers to manage their price suggestions"""
+    user_suggestions = PriceSuggestionRequest.objects.filter(buyer=request.user).order_by('-created_at')
+    
+    context = {
+        'user_suggestions': user_suggestions,
+    }
+    return render(request, 'buyer_price_suggestions.html', context)
+
+@login_required
+def add_product(request):
+    """View for farmers to add new products"""
+    # Check if user is a farmer
+    try:
+        user_profile = request.user.profile
+        if user_profile.user_type not in ['farmer', 'both']:
+            messages.error(request, 'Only farmers can add products.')
+            return redirect('dashboard')
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Please complete your profile to add products.')
+        return redirect('security_settings')
+    
+    categories = ProductCategory.objects.all()
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        category_id = request.POST.get('category')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        quantity = request.POST.get('quantity')
+        unit = request.POST.get('unit')
+        quality_grade = request.POST.get('quality_grade')
+        location = request.POST.get('location')
+        harvest_date = request.POST.get('harvest_date')
+        image = request.FILES.get('image')
+        
+        # Validate required fields
+        errors = []
+        if not name:
+            errors.append('Product name is required.')
+        if not category_id:
+            errors.append('Category is required.')
+        if not description:
+            errors.append('Description is required.')
+        if not price or float(price) <= 0:
+            errors.append('Valid price is required.')
+        if not quantity or float(quantity) <= 0:
+            errors.append('Valid quantity is required.')
+        if not location:
+            errors.append('Location is required.')
+        if not harvest_date:
+            errors.append('Harvest date is required.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                category = ProductCategory.objects.get(id=category_id)
+                
+                # Create the product
+                product = Product.objects.create(
+                    farmer=request.user,
+                    category=category,
+                    name=name,
+                    description=description,
+                    price=price,
+                    quantity=quantity,
+                    unit=unit,
+                    quality_grade=quality_grade,
+                    location=location,
+                    harvest_date=harvest_date,
+                    image=image,
+                    is_available=True
+                )
+                
+                # Generate AI price suggestion
+                ai_suggestion = AgriAI.calculate_optimal_price(product)
+                PriceSuggestion.objects.create(
+                    product=product,
+                    suggested_price=ai_suggestion['suggested_price'],
+                    confidence_score=ai_suggestion['confidence_score'],
+                    factors_considered=ai_suggestion['factors_considered'],
+                    price_label=ai_suggestion['price_label']
+                )
+                
+                messages.success(request, f'Product "{name}" added successfully! AI price analysis completed.')
+                return redirect('farmer_dashboard')
+                
+            except Exception as e:
+                messages.error(request, f'Error adding product: {str(e)}')
+    
+    # Get AI recommendations for similar products
+    similar_products = Product.objects.filter(
+        farmer=request.user,
+        is_available=True
+    ).order_by('-created_at')[:3]
+    
+    context = {
+        'categories': categories,
+        'similar_products': similar_products,
+        'quality_grades': ['premium', 'grade1', 'grade2', 'standard'],
+        'units': ['kg', 'g', 'ton', 'bag', 'crate', 'piece', 'bunch'],
+    }
+    
+    return render(request, 'add_product.html', context)

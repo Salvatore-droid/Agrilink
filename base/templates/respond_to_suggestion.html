@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Respond to Price Suggestion - AgriLink Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    .response-header {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+
+    .response-container {
+        max-width: 800px;
+        margin: 0 auto 60px;
+    }
+
+    .suggestion-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        border-left: 4px solid #667eea;
+    }
+
+    .suggestion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .suggestion-price {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #27ae60;
+    }
+
+    .suggestion-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .detail-item {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .detail-item strong {
+        display: block;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .response-form {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #27ae60;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+    }
+
+    .price-comparison {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .price-difference {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 3px;
+        margin-left: 10px;
+    }
+
+    .price-higher { background: #ffeaa7; color: #e17055; }
+    .price-lower { background: #a3e4d7; color: #16a085; }
+    .price-same { background: #d6eaf8; color: #2980b9; }
+
+    .ai-suggestion {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .ai-suggestion h4 {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+
+    @media (max-width: 768px) {
+        .suggestion-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="response-header">
+    <div class="container">
+        <h1>Respond to Price Request</h1>
+        <p>Make an offer to the buyer and start a conversation</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="response-container">
+        <!-- Suggestion Details -->
+        <div class="suggestion-card">
+            <div class="suggestion-header">
+                <div>
+                    <h2>{{ suggestion.product_name }}</h2>
+                    <p class="text-muted">{{ suggestion.category.name }} • {{ suggestion.location }}</p>
+                </div>
+                <div class="suggestion-price">
+                    KES {{ suggestion.suggested_price }}
+                </div>
+            </div>
+
+            <div class="suggestion-details">
+                <div class="detail-item">
+                    <strong>Quantity Needed</strong>
+                    {{ suggestion.quantity_needed }} {{ suggestion.unit }}
+                </div>
+                <div class="detail-item">
+                    <strong>Buyer</strong>
+                    {{ suggestion.buyer.get_full_name|default:suggestion.buyer.username }}
+                </div>
+                <div class="detail-item">
+                    <strong>Urgency</strong>
+                    <span class="badge badge-{% if suggestion.urgency == 'high' %}danger{% elif suggestion.urgency == 'medium' %}warning{% else %}success{% endif %}">
+                        {{ suggestion.urgency|title }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <strong>Expires In</strong>
+                    {{ suggestion.expires_at|timeuntil }}
+                </div>
+            </div>
+
+            {% if suggestion.description %}
+            <div class="detail-item">
+                <strong>Buyer's Notes</strong>
+                <p>{{ suggestion.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- AI Price Suggestion -->
+        <div class="ai-suggestion">
+            <h4><i class="fas fa-robot"></i> AI Price Analysis</h4>
+            <p>Based on current market trends and similar products, we suggest considering a price range of <strong>KES {{ suggestion.suggested_price|add:"10" }} - KES {{ suggestion.suggested_price|add:"30" }}</strong> for optimal response.</p>
+        </div>
+
+        <!-- Response Form -->
+        <div class="response-form">
+            <h3>Make Your Offer</h3>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="counter_price">Your Counter Price (KES)</label>
+                    <input type="number" id="counter_price" name="counter_price" class="form-control" 
+                           step="0.01" min="0" placeholder="Leave empty to accept buyer's price"
+                           value="{{ suggestion.suggested_price }}">
+                    <small class="text-muted">Leave this field empty if you accept the buyer's suggested price</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="available_quantity">Quantity You Can Supply *</label>
+                    <input type="number" id="available_quantity" name="available_quantity" class="form-control" 
+                           step="0.01" min="0" required placeholder="e.g., 50">
+                </div>
+
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select id="unit" name="unit" class="form-control">
+                        <option value="kg" {% if suggestion.unit == 'kg' %}selected{% endif %}>Kilogram (kg)</option>
+                        <option value="g" {% if suggestion.unit == 'g' %}selected{% endif %}>Gram (g)</option>
+                        <option value="ton" {% if suggestion.unit == 'ton' %}selected{% endif %}>Ton</option>
+                        <option value="bag" {% if suggestion.unit == 'bag' %}selected{% endif %}>Bag</option>
+                        <option value="crate" {% if suggestion.unit == 'crate' %}selected{% endif %}>Crate</option>
+                        <option value="piece" {% if suggestion.unit == 'piece' %}selected{% endif %}>Piece</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message to Buyer *</label>
+                    <textarea id="message" name="message" class="form-control" rows="4" required 
+                              placeholder="Tell the buyer about your product quality, delivery options, or any other details..."></textarea>
+                </div>
+
+                <!-- Price Comparison -->
+                <div class="price-comparison">
+                    <h4>Price Comparison</h4>
+                    <p>
+                        Buyer's Price: <strong>KES {{ suggestion.suggested_price }}</strong>
+                        {% if counter_price %}
+                        <br>
+                        Your Price: <strong>KES <span id="your-price-display">{{ suggestion.suggested_price }}</span></strong>
+                        <span id="price-difference" class="price-difference"></span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-paper-plane"></i> Send Response
+                    </button>
+                    <a href="{% url 'farmer_dashboard' %}" class="btn btn-outline btn-large">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const counterPriceInput = document.getElementById('counter_price');
+        const yourPriceDisplay = document.getElementById('your-price-display');
+        const priceDifference = document.getElementById('price-difference');
+        const buyerPrice = {{ suggestion.suggested_price }};
+
+        function updatePriceComparison() {
+            let yourPrice = parseFloat(counterPriceInput.value) || buyerPrice;
+            yourPriceDisplay.textContent = yourPrice.toFixed(2);
+            
+            const difference = yourPrice - buyerPrice;
+            const percentage = ((difference / buyerPrice) * 100).toFixed(1);
+            
+            if (difference > 0) {
+                priceDifference.textContent = `+${percentage}% higher`;
+                priceDifference.className = 'price-difference price-higher';
+            } else if (difference < 0) {
+                priceDifference.textContent = `${Math.abs(percentage)}% lower`;
+                priceDifference.className = 'price-difference price-lower';
+            } else {
+                priceDifference.textContent = 'Same price';
+                priceDifference.className = 'price-difference price-same';
+            }
+        }
+
+        if (counterPriceInput && yourPriceDisplay && priceDifference) {
+            counterPriceInput.addEventListener('input', updatePriceComparison);
+            updatePriceComparison(); // Initial calculation
+        }
+
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const availableQuantity = document.getElementById('available_quantity').value;
+            const message = document.getElementById('message').value;
+            
+            if (!availableQuantity || availableQuantity <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid quantity you can supply.');
+                return;
+            }
+            
+            if (!message.trim()) {
+                e.preventDefault();
+                alert('Please enter a message to the buyer.');
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

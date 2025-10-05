@@ -510,7 +510,13 @@
                 <div class="sort-options">
                     <span>{{ products.paginator.count }} products found</span>
                 </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="{% url 'price_suggestions_marketplace' %}" class="btn btn-secondary">
+                        <i class="fas fa-comments-dollar"></i> Suggest Prices
+                    </a>
+                </div>
             </div>
+            
             
             {% if products %}
             <div class="products-grid">

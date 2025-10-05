@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import MinLengthValidator
 from django.utils import timezone
+from django.core.validators import MinLengthValidator
 import json
 
 class UserProfile(models.Model):
@@ -74,6 +74,15 @@ class ProductCategory(models.Model):
     def __str__(self):
         return self.name
 
+from django.db import models
+from django.core.files.storage import FileSystemStorage
+import os
+
+# Optional: Custom storage for better organization
+def product_image_path(instance, filename):
+    # File will be uploaded to MEDIA_ROOT/products/user_<id>/<filename>
+    return f'products/user_{instance.farmer.id}/{filename}'
+
 class Product(models.Model):
     QUALITY_CHOICES = [
         ('premium', 'Premium'),
@@ -93,12 +102,32 @@ class Product(models.Model):
     location = models.CharField(max_length=100, null=True)
     harvest_date = models.DateField()
     is_available = models.BooleanField(default=True)
+    
+    # Replace image_url with actual ImageField
+    image = models.ImageField(
+        upload_to=product_image_path,  # Custom upload path
+        null=True, 
+        blank=True,
+        verbose_name="Product Image"
+    )
+    
+    # Keep image_url as backup or for external images
     image_url = models.CharField(max_length=500, blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.name} by {self.farmer.username}"
+    
+    # Optional: Property to get image URL with fallback
+    @property
+    def image_display(self):
+        if self.image:
+            return self.image.url
+        elif self.image_url:
+            return self.image_url
+        return '/static/images/default-product.png'  # Add a default image
 
 class PriceSuggestion(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='price_suggestions')
@@ -187,6 +216,16 @@ class SearchHistory(models.Model):
     results_count = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Testimonial(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Testimonial by {self.user.username}"
+
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -197,3 +236,52 @@ class ContactMessage(models.Model):
     
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"
+
+# Add these models to your existing models.py
+
+class PriceSuggestionRequest(models.Model):
+    """Model for buyers to request/suggest prices for products"""
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='price_suggestions')
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    suggested_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity_needed = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit = models.CharField(max_length=20, default='kg')
+    location = models.CharField(max_length=100)
+    urgency = models.CharField(max_length=20, choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High')
+    ], default='medium')
+    status = models.CharField(max_length=20, choices=[
+        ('active', 'Active'),
+        ('fulfilled', 'Fulfilled'),
+        ('expired', 'Expired')
+    ], default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    
+    def __str__(self):
+        return f"{self.product_name} - {self.suggested_price} by {self.buyer.username}"
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+class FarmerPriceResponse(models.Model):
+    """Model for farmers to respond to price suggestions"""
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE)
+    price_suggestion = models.ForeignKey(PriceSuggestionRequest, on_delete=models.CASCADE, related_name='responses')
+    counter_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    available_quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('countered', 'Countered')
+    ], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Response to {self.price_suggestion.product_name} by {self.farmer.username}"
