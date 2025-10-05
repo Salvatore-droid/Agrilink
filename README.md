@@ -4,101 +4,77 @@ A comprehensive farmer-to-buyer agricultural marketplace platform that connects 
 Table of Contents
 
 -Features
-
 -Technology Stack
-
 -Installation
-
 -Project Structure
-
 -Database Models
-
 -API Endpoints
-
 -AI Features
-
 -Screenshots
-
 -Contributing
-
 -License
-
 -Features
+
 
 🎯 Core Functionality
 
 -Multi-user System: Farmers, Buyers, and Both roles
-
 -Product Marketplace: Browse, search, and filter agricultural products
-
 -AI-Powered Pricing: Smart price suggestions using machine learning
-
 -Price Suggestions: Buyers can suggest prices to farmers
-
 -Wishlist & Orders: Save products and place orders
-
 -Market Trends: Real-time market insights and analytics
-
 -Secure Authentication: User registration, login, and security settings
+
 
 🤖 AI-Powered Features
 
 -Optimal Price Calculation: AI suggests best prices based on market data
-
 -Personalized Recommendations: Product suggestions based on user behavior
-
 -Market Trend Analysis: Predictive analytics for price trends
-
 -Demand Forecasting: AI predicts product demand patterns
+
 
 💼 User Dashboards
 
 -Farmer Dashboard: Manage products, view price suggestions, track orders
-
 -Buyer Dashboard: Browse products, suggest prices, track purchases
-
 -Admin Panel: Comprehensive management with Jazzmin interface
+
 
 Technology Stack
 
 Backend
 
 Django 4.2+: Python web framework
-
 Django REST Framework: API development
-
 PostgreSQL: Database (production)
-
 SQLite: Database (development)
-
 -Pillow: Image processing
-
 -Jazzmin: Admin interface customization
+
 
 Frontend
 
 -HTML5/CSS3: Responsive design
-
 -JavaScript: Interactive features
-
 -Font Awesome: Icons
-
 -Custom CSS: Professional styling
+
 
 AI/ML
 
 -Custom AI Service: Price optimization algorithms
-
 -Market Analysis: Trend prediction models
-
 -Recommendation Engine: Personalized suggestions
+
 
 Installation
 Prerequisites
 
 Python 3.8+
-
 PostgreSQL (optional, SQLite for development)
+
 
 Virtual Environment
 
@@ -151,100 +127,86 @@ bash
 Visit http://localhost:8000 to view the application.
 Project Structure
 text
-
-agrilink-market/
-├── base/                          # Main Django app
-│   ├── models.py                  # Database models
-│   ├── views.py                   # Application views
-│   ├── urls.py                    # URL routing
-│   ├── admin.py                   # Admin configuration
-│   ├── ai_service.py              # AI algorithms
-│   └── templates/                 # HTML templates
-├── static/                        # Static files
-│   ├── css/                       # Stylesheets
-│   ├── js/                        # JavaScript files
-│   └── images/                    # Images and icons
-├── media/                         # User uploaded files
-├── requirements.txt               # Python dependencies
-└── manage.py                      # Django management script
+    
+    agrilink-market/
+    ├── base/                          # Main Django app
+    │   ├── models.py                  # Database models
+    │   ├── views.py                   # Application views
+    │   ├── urls.py                    # URL routing
+    │   ├── admin.py                   # Admin configuration
+    │   ├── ai_service.py              # AI algorithms
+    │   └── templates/                 # HTML templates
+    ├── static/                        # Static files
+    │   ├── css/                       # Stylesheets
+    │   ├── js/                        # JavaScript files
+    │   └── images/                    # Images and icons
+    ├── media/                         # User uploaded files
+    ├── requirements.txt               # Python dependencies
+    └── manage.py                      # Django management script
 
 Database Models
 Core Models
 
 -UserProfile: Extended user information with farmer/buyer roles
-
 -Product: Agricultural products with pricing and availability
-
 -ProductCategory: Product categorization
-
 -Order: Purchase orders and transactions
-
 -PriceSuggestion: AI-generated price recommendations
+
 
 Authentication & Security
 
 -LoginHistory: User login tracking
-
 -SecuritySettings: Two-factor authentication and security preferences
-
 -PasswordResetToken: Secure password reset functionality
+
 
 Marketplace Features
 
 -Wishlist: User saved products
-
 -ProductReview: Customer reviews and ratings
-
 -MarketTrend: Market analysis data
-
 -PriceSuggestionRequest: Buyer price requests to farmers
-
 -FarmerPriceResponse: Farmer responses to price suggestions
+
 
 AI & Analytics
 
 -AIRecommendation: Personalized product suggestions
-
 -SearchHistory: User search behavior tracking
-
 -PriceSuggestion: AI-generated pricing insights
+
 
 API Endpoints
 Authentication
 
   POST /api/login/ - User authentication
-
   POST /api/logout/ - User logout
-
   POST /api/register/ - User registration
+
 
 Products
 
   GET /api/products/ - List all products
-
   POST /api/products/ - Create new product (farmers)
-
   GET /api/products/{id}/ - Product details
-
   PUT /api/products/{id}/ - Update product
+
 
 AI Features
 
   GET /api/ai-recommendations/ - Personalized recommendations
-
   GET /api/price-suggestions/ - AI price suggestions
-
   POST /api/market-trends/ - Market analysis data
+
 
 Orders & Marketplace
 
   GET /api/orders/ - User orders
-
   POST /api/orders/ - Create new order
-
   GET /api/wishlist/ - User wishlist
+  POST /api/wishlist/{product_id}/ - Add to wishlist
 
-POST /api/wishlist/{product_id}/ - Add to wishlist
 
 AI Features
 Price Optimization
@@ -323,19 +285,16 @@ Support
 For support and questions:
 
   Email: geniusokwemba53@gmail.com
-
   Issues: GitHub Issues
-
   Documentation: Project Wiki
+
 
 Acknowledgments
 
   Kenyan Agricultural Board for market data insights
-
   Django community for excellent documentation
-
   Font Awesome for beautiful icons
-
   Contributors and testers
+  
 
 AgriLink Market - Transforming agriculture through technology, connecting farmers directly to buyers for mutual benefit. 🌱🚀
