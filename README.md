@@ -83,7 +83,7 @@ Setup Instructions
 Clone the Repository
 bash
     
-    git clone https://github.com/your-username/agrilink-market.git
+    git clone https://github.com/Salvatore-droid/agrilink.git
     cd agrilink-market
 
 Create Virtual Environment
